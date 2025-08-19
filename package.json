@@ -4,27 +4,18 @@
   "description": "extendable lint config used by undefined",
   "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
   "files": [
-    ".eslintrc"
+    ".oxlintrc.json"
   ],
   "bin": {
-    "undefined-lint": "./setup-eslint.ts",
-    "setup-eslint": "./setup-eslint.ts"
+    "undefined-lint": "./setup-oxlint.ts",
+    "setup-oxlint": "./setup-oxlint.ts"
   },
   "scripts": {
     "release": "npm version patch && npm publish",
     "test:lint": "vitest run lint-test/all-lint-rules.test.js"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "eslint": "^8.57.1",
-    "eslint-config-standard-with-typescript": "^43.0.1",
-    "eslint-plugin-better-tailwindcss": "^3.7.0",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.6.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^6.0.0-rc.1",
+    "oxlint": "^1.12.0",
     "tsx": "^4.20.3"
   },
   "devDependencies": {
