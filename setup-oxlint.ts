@@ -247,7 +247,7 @@ const main = async (): Promise<void> => {
       }
 
       // Add/update lint script that does both linting with fixes and formatting
-      packageJson.scripts.lint = 'oxlint . --fix; biome format --write .'
+      packageJson.scripts.lint = 'oxlint --fix --ignore-pattern "node_modules/**" .; biome format --write .'
 
       fs.writeFileSync(
         packageJsonPath,

@@ -48,7 +48,7 @@ That's it! The setup script will:
 ```json
 {
   "scripts": {
-    "lint": "oxlint . --fix && biome format --write ."
+    "lint": "oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
   },
   "devDependencies": {
     "ox-standard": "github:JohnDeved/ox-standard",
@@ -203,7 +203,7 @@ echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.js
 echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
 
 # Add scripts to package.json
-npm pkg set scripts.lint="oxlint . --fix && biome format --write ."
+npm pkg set scripts.lint="oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
 ```
 
 ## 🤝 Contributing
