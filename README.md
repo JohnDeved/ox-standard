@@ -1,4 +1,4 @@
-# undefined-lint
+# ox-standard
 
 **Lightning-fast JavaScript Standard Style linting with oxlint** ⚡
 
@@ -30,7 +30,7 @@ This configuration implements the complete [JavaScript Standard Style](https://s
 Replace ESLint in your project with one command:
 
 ```bash
-npx github:JohnDeved/undefined-lint
+npx github:JohnDeved/ox-standard
 ```
 
 That's it! The setup script will:
@@ -50,7 +50,7 @@ That's it! The setup script will:
     "lint:fix": "oxlint . --fix"
   },
   "devDependencies": {
-    "undefined-lint": "github:JohnDeved/undefined-lint"
+    "ox-standard": "github:JohnDeved/ox-standard"
   }
 }
 ```
@@ -58,7 +58,7 @@ That's it! The setup script will:
 ### Minimal, Extensible Config
 ```json
 {
-  "extends": ["./node_modules/undefined-lint/.oxlintrc.json"]
+  "extends": ["./node_modules/ox-standard/.oxlintrc.json"]
 }
 ```
 
@@ -74,7 +74,7 @@ Override any rules in your `.oxlintrc.json`:
 
 ```json
 {
-  "extends": ["./node_modules/undefined-lint/.oxlintrc.json"],
+  "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
   "rules": {
     "no-console": "warn",
     "prefer-const": "off"
@@ -157,10 +157,10 @@ If you prefer manual setup:
 
 ```bash
 # Install the package from GitHub
-npm install --save-dev github:JohnDeved/undefined-lint
+npm install --save-dev github:JohnDeved/ox-standard
 
 # Create config file
-echo '{"extends": ["./node_modules/undefined-lint/.oxlintrc.json"]}' > .oxlintrc.json
+echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 
 # Add scripts to package.json
 npm pkg set scripts.lint="oxlint ."
@@ -169,7 +169,7 @@ npm pkg set scripts.lint:fix="oxlint . --fix"
 
 ## 🤝 Contributing
 
-Found an issue or want to suggest improvements? [Open an issue](https://github.com/JohnDeved/undefined-lint/issues) or submit a pull request.
+Found an issue or want to suggest improvements? [Open an issue](https://github.com/JohnDeved/ox-standard/issues) or submit a pull request.
 
 ## 📄 License
 

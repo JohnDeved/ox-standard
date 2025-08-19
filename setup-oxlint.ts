@@ -138,13 +138,13 @@ const main = async (): Promise<void> => {
     }
   }
 
-  // 3. Install undefined-lint from GitHub (which includes oxlint as dependency)
-  console.log('Installing undefined-lint from GitHub...')
+  // 3. Install ox-standard from GitHub (which includes oxlint as dependency)
+  console.log('Installing ox-standard from GitHub...')
   try {
-    execSync('npm install --save-dev github:JohnDeved/undefined-lint', { stdio: 'inherit' })
-    console.log('✓ Installed undefined-lint from GitHub with oxlint')
+    execSync('npm install --save-dev github:JohnDeved/ox-standard', { stdio: 'inherit' })
+    console.log('✓ Installed ox-standard from GitHub with oxlint')
   } catch {
-    console.error('❌ Failed to install undefined-lint from GitHub')
+    console.error('❌ Failed to install ox-standard from GitHub')
     process.exit(1)
   }
 
@@ -152,14 +152,14 @@ const main = async (): Promise<void> => {
   const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
   if (!fs.existsSync(oxlintrcPath)) {
     const config = {
-      extends: ['./node_modules/undefined-lint/.oxlintrc.json'],
+      extends: ['./node_modules/ox-standard/.oxlintrc.json'],
       // Users can override rules here:
       // rules: {
       //   "no-console": "warn"
       // }
     }
     fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
-    console.log('✓ Created .oxlintrc.json extending undefined-lint config')
+    console.log('✓ Created .oxlintrc.json extending ox-standard config')
   } else {
     console.log('⚠️  .oxlintrc.json already exists, skipping creation.')
   }
