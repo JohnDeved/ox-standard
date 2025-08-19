@@ -42,29 +42,6 @@ That's it! The setup automatically:
 - Extensible configs you can customize
 - VSCode integration with recommended extensions
 
-## 🧪 Quick Test
-
-Create a test file to verify everything works:
-
-```javascript
-// test.js
-var message = "Hello World";
-if (message == "Hello World") {
-  console.log(message);
-}
-```
-
-Run: `npm run lint`
-
-Automatically transforms to:
-```javascript
-// test.js  
-const message = 'Hello World'
-if (message === 'Hello World') {
-  console.log(message)
-}
-```
-
 ## 🛠 Customization
 
 Need to override rules? Easy:
