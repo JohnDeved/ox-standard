@@ -195,16 +195,16 @@ const main = async (): Promise<void> => {
     }
   }
 
-  // 3. Install ox-standard and biome from GitHub
-  console.log('Installing ox-standard and biome...')
+  // 3. Install ox-standard from GitHub
+  console.log('Installing ox-standard...')
   try {
     execSync(
-      'npm install --save-dev github:JohnDeved/ox-standard @biomejs/biome',
+      'npm install --save-dev github:JohnDeved/ox-standard',
       { stdio: 'inherit' }
     )
-    console.log('✓ Installed ox-standard and biome')
+    console.log('✓ Installed ox-standard')
   } catch {
-    console.error('❌ Failed to install ox-standard and biome')
+    console.error('❌ Failed to install ox-standard')
     process.exit(1)
   }
 
