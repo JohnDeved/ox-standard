@@ -103,7 +103,7 @@ The setup script handles everything automatically:
 Prefer manual setup?
 
 ```bash
-npm install --save-dev github:JohnDeved/ox-standard @biomejs/biome
+npm install --save-dev github:JohnDeved/ox-standard
 
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
