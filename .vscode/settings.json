@@ -3,10 +3,13 @@
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.biome": "explicit",
+    "source.fixAll.oxc": "explicit",
+    "source.fixAll.biome": "explicit"
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",
+  "files.eol": "\n",
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
@@ -19,5 +22,10 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "files.eol": "\n"
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
 }
