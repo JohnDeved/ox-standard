@@ -1,11 +1,5 @@
 {
-  "plugins": [
-    "unicorn",
-    "typescript", 
-    "oxc",
-    "react",
-    "react_perf"
-  ],
+  "plugins": ["unicorn", "typescript", "oxc", "react", "react_perf"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -31,7 +25,7 @@
     "no-labels": "error",
     "no-extra-label": "error",
     "sort-imports": "off",
-    
+
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-string-trim-start-end": "error",
     "unicorn/prefer-spread": "error",
@@ -47,18 +41,18 @@
     "unicorn/number-literal-case": "error",
     "unicorn/no-zero-fractions": "error",
     "unicorn/consistent-existence-index-check": "warn",
-    
+
     "no-var": "error",
     "no-debugger": "error",
-    
+
     "typescript/consistent-type-definitions": "error",
-    "typescript/consistent-type-imports": "error", 
+    "typescript/consistent-type-imports": "error",
     "typescript/no-inferrable-types": "error",
     "typescript/no-empty-interface": "warn",
     "typescript/no-explicit-any": "warn",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
     "typescript/no-unnecessary-type-arguments": "error",
-    "typescript/no-unnecessary-type-assertion": "error", 
+    "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unnecessary-type-constraint": "error",
     "typescript/non-nullable-type-assertion-style": "error",
     "typescript/prefer-as-const": "error",
@@ -78,16 +72,16 @@
     "typescript/no-for-in-array": "off",
     "typescript/return-await": "off",
     "typescript/no-non-null-assertion": "off",
-    
+
     "react/self-closing-comp": "error",
     "react/jsx-curly-brace-presence": "error",
-    "react/jsx-fragments": "error", 
+    "react/jsx-fragments": "error",
     "react/jsx-no-useless-fragment": "error",
     "react/jsx-boolean-value": "error",
     "react/rules-of-hooks": "error",
     "react/no-unknown-property": "off",
     "react/react-in-jsx-scope": "off",
-    
+
     "import/no-duplicates": "error",
     "import/first": "error",
     "import/exports-last": "off",

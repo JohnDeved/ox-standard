@@ -32,9 +32,9 @@ describe('oxlint rules via shared config', () => {
   const runOxlint = (files, plugins = '') => {
     try {
       const command = `npx oxlint --config ${path.resolve(__dirname, '../.oxlintrc.json')} ${plugins} --format json ${files.join(' ')}`
-      const output = execSync(command, { 
+      const output = execSync(command, {
         cwd: path.resolve(__dirname, '..'),
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
       return JSON.parse(output)
     } catch (error) {
@@ -53,12 +53,12 @@ describe('oxlint rules via shared config', () => {
   it('should trigger React rules for React components', async () => {
     fs.writeFileSync(reactFile, reactCode)
     const results = runOxlint([reactFile], '--react-plugin')
-    
+
     // Check if any React-related issues were found
-    const hasReactIssues = results.diagnostics?.some(d => 
-      d.code?.includes('react') || d.code?.includes('jsx')
+    const _hasReactIssues = results.diagnostics?.some(
+      d => d.code?.includes('react') || d.code?.includes('jsx')
     )
-    
+
     // Should find at least some linting issues in the React code
     expect(results.diagnostics?.length || 0).toBeGreaterThan(0)
     fs.unlinkSync(reactFile)
@@ -67,14 +67,15 @@ describe('oxlint rules via shared config', () => {
   it('should trigger standard style rules', async () => {
     fs.writeFileSync(standardFile, standardCode)
     const results = runOxlint([standardFile])
-    
+
     // Should find issues with var usage and other style problems
-    const hasStyleIssues = results.diagnostics?.some(d => 
-      d.code === 'eslint(no-var)' || 
-      d.code?.includes('style') ||
-      d.code?.includes('format')
+    const _hasStyleIssues = results.diagnostics?.some(
+      d =>
+        d.code === 'eslint(no-var)' ||
+        d.code?.includes('style') ||
+        d.code?.includes('format')
     )
-    
+
     expect(results.diagnostics?.length || 0).toBeGreaterThan(0)
     fs.unlinkSync(standardFile)
   })
@@ -83,7 +84,7 @@ describe('oxlint rules via shared config', () => {
     // Test that oxlint can load our configuration
     const configPath = path.resolve(__dirname, '../.oxlintrc.json')
     expect(fs.existsSync(configPath)).toBe(true)
-    
+
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
     expect(config.plugins).toContain('typescript')
     expect(config.plugins).toContain('react')
