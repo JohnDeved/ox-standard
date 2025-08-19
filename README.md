@@ -11,7 +11,7 @@ Drop-in replacement for ESLint/Prettier that's 10x faster. Enforces [JavaScript 
 Replace ESLint/Prettier in your project with one command:
 
 ```bash
-npx github:JohnDeved/ox-standard
+npx JohnDeved/ox-standard
 ```
 
 That's it! The setup automatically:
