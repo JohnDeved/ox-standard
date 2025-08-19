@@ -65,7 +65,7 @@ if (message === 'Hello World') {
 
 Need to override rules? Easy:
 
-```json
+```jsonc
 // .oxlintrc.json
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
@@ -75,7 +75,7 @@ Need to override rules? Easy:
 }
 ```
 
-```json
+```jsonc
 // biome.json  
 {
   "extends": ["./node_modules/ox-standard/biome.json"],
