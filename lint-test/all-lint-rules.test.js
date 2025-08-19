@@ -55,7 +55,7 @@ describe('oxlint rules via shared config', () => {
     const results = runOxlint([reactFile], '--react-plugin')
 
     // Check if any React-related issues were found
-    const hasReactIssues = results.diagnostics?.some(
+    const _hasReactIssues = results.diagnostics?.some(
       d => d.code?.includes('react') || d.code?.includes('jsx')
     )
 
@@ -69,7 +69,7 @@ describe('oxlint rules via shared config', () => {
     const results = runOxlint([standardFile])
 
     // Should find issues with var usage and other style problems
-    const hasStyleIssues = results.diagnostics?.some(
+    const _hasStyleIssues = results.diagnostics?.some(
       d =>
         d.code === 'eslint(no-var)' ||
         d.code?.includes('style') ||

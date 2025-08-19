@@ -101,7 +101,7 @@ const obj = { "key": "value" }`
     indentedLines.forEach(line => {
       const indentMatch = line.match(/^(\s+)/)
       if (indentMatch) {
-        const indent = indentMatch[1]
+        const [, indent] = indentMatch
         // Should use spaces, not tabs
         expect(indent).not.toMatch(/\t/)
         // Indent should be multiples of 2
