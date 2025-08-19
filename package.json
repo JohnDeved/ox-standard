@@ -1,5 +1,5 @@
 {
-  "name": "@undefined/lint",
+  "name": "undefined-lint",
   "version": "0.1.31",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
@@ -12,7 +12,6 @@
     "setup-oxlint": "./setup-oxlint.ts"
   },
   "scripts": {
-    "release": "npm version patch && npm publish",
     "test:lint": "vitest run lint-test/all-lint-rules.test.js"
   },
   "dependencies": {
