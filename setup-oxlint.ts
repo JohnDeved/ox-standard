@@ -63,15 +63,22 @@ const getTemplateVSCodeConfig = () => {
   // Read template files from this package's .vscode directory
   const packageRoot = path.dirname(__filename)
   const templateVSCodeDir = path.resolve(packageRoot, '.vscode')
-  
+
   // Read template extensions.json
-  const templateExtensionsPath = path.resolve(templateVSCodeDir, 'extensions.json')
-  const templateExtensions = JSON.parse(fs.readFileSync(templateExtensionsPath, 'utf8'))
-  
+  const templateExtensionsPath = path.resolve(
+    templateVSCodeDir,
+    'extensions.json'
+  )
+  const templateExtensions = JSON.parse(
+    fs.readFileSync(templateExtensionsPath, 'utf8')
+  )
+
   // Read template settings.json
   const templateSettingsPath = path.resolve(templateVSCodeDir, 'settings.json')
-  const templateSettings = JSON.parse(fs.readFileSync(templateSettingsPath, 'utf8'))
-  
+  const templateSettings = JSON.parse(
+    fs.readFileSync(templateSettingsPath, 'utf8')
+  )
+
   return { templateExtensions, templateSettings }
 }
 
@@ -85,7 +92,10 @@ const setupVSCode = () => {
 
   // Setup recommended extensions
   const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
-  fs.writeFileSync(extensionsPath, JSON.stringify(templateExtensions, undefined, 2))
+  fs.writeFileSync(
+    extensionsPath,
+    JSON.stringify(templateExtensions, undefined, 2)
+  )
   console.log('✓ Created .vscode/extensions.json with recommended extensions')
 
   // Setup VSCode settings
@@ -182,10 +192,9 @@ const main = async (): Promise<void> => {
   // 3. Install ox-standard from GitHub
   console.log('Installing ox-standard...')
   try {
-    execSync(
-      'npm install --save-dev github:JohnDeved/ox-standard',
-      { stdio: 'inherit' }
-    )
+    execSync('npm install --save-dev github:JohnDeved/ox-standard', {
+      stdio: 'inherit',
+    })
     console.log('✓ Installed ox-standard')
   } catch {
     console.error('❌ Failed to install ox-standard')
@@ -231,7 +240,8 @@ const main = async (): Promise<void> => {
       }
 
       // Add/update lint script that does both linting with fixes and formatting
-      packageJson.scripts.lint = 'oxlint --fix --ignore-pattern "node_modules/**" .; biome format --write .'
+      packageJson.scripts.lint =
+        'oxlint --fix --ignore-pattern "node_modules/**" .; biome format --write .'
 
       fs.writeFileSync(
         packageJsonPath,
