@@ -4,7 +4,7 @@ import path from 'path'
 import readline from 'readline'
 import { execSync } from 'child_process'
 
-const OXLINT_CONFIG_FILES = [
+const LINT_CONFIG_FILES = [
   '.oxlintrc.json',
   'oxlint.json',
   '.eslintrc',
@@ -44,19 +44,71 @@ const prompt = (question: string): Promise<boolean> => {
   })
 }
 
+const setupVSCode = () => {
+  const vscodeDir = path.resolve(process.cwd(), '.vscode')
+  if (!fs.existsSync(vscodeDir)) {
+    fs.mkdirSync(vscodeDir)
+  }
+
+  // Setup recommended extensions
+  const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
+  const extensions = {
+    recommendations: [
+      'bradlc.vscode-tailwindcss',
+      'ms-vscode.vscode-typescript-next',
+      'esbenp.prettier-vscode'
+    ]
+  }
+  fs.writeFileSync(extensionsPath, JSON.stringify(extensions, undefined, 2))
+  console.log('✓ Created .vscode/extensions.json with recommended extensions')
+
+  // Setup VSCode settings
+  const settingsPath = path.resolve(vscodeDir, 'settings.json')
+  let existingSettings = {}
+  if (fs.existsSync(settingsPath)) {
+    try {
+      existingSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'))
+    } catch {}
+  }
+  
+  const settings = {
+    ...existingSettings,
+    'editor.tabSize': 2,
+    'editor.insertSpaces': true,
+    'editor.detectIndentation': false,
+    'editor.codeActionsOnSave': {
+      'source.fixAll': 'explicit'
+    },
+    'editor.formatOnSave': true,
+    'files.eol': '\n'
+  }
+  
+  // Remove any ESLint-specific settings
+  delete settings['eslint.enable']
+  delete settings['eslint.run']
+  if (settings['editor.codeActionsOnSave']) {
+    delete settings['editor.codeActionsOnSave']['source.fixAll.eslint']
+  }
+  
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
+  console.log('✓ Updated .vscode/settings.json with JavaScript Standard Style preferences')
+}
+
 const main = async (): Promise<void> => {
+  console.log('🚀 Setting up oxlint with JavaScript Standard Style...\n')
+
   // 1. Check for existing linting config files
-  const foundConfigs = OXLINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
+  const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
   if (foundConfigs.length) {
     console.log('Found existing lint config files:', foundConfigs.join(', '))
     const shouldRemove = await prompt('Remove them before continuing?')
     if (shouldRemove) {
       for (const f of foundConfigs) {
         fs.rmSync(path.resolve(process.cwd(), f))
-        console.log('Removed', f)
+        console.log('✓ Removed', f)
       }
     } else {
-      console.log('Aborting setup.')
+      console.log('❌ Aborting setup. Please remove existing config files first.')
       process.exit(1)
     }
   }
@@ -75,172 +127,44 @@ const main = async (): Promise<void> => {
     if (shouldUninstall) {
       try {
         execSync(`npm uninstall ${installedPackages.join(' ')}`, { stdio: 'inherit' })
-        console.log('Uninstalled:', installedPackages.join(', '))
+        console.log('✓ Uninstalled ESLint packages:', installedPackages.join(', '))
       } catch {
-        console.error('Failed to uninstall some packages. Please check manually.')
+        console.error('❌ Failed to uninstall some packages. Please check manually.')
         process.exit(1)
       }
     } else {
-      console.log('Aborting setup.')
+      console.log('❌ Aborting setup. Please remove ESLint packages first.')
       process.exit(1)
     }
   }
 
-  // 3. Install undefined-lint
-  console.log('Installing JohnDeved/undefined-lint...')
-  execSync('npm i JohnDeved/undefined-lint', { stdio: 'inherit' })
-
-  // 3.1. Install oxlint locally
-  console.log('Installing oxlint...')
-  execSync('npm i oxlint', { stdio: 'inherit' })
-
-  // 4. Create .oxlintrc.json if not present
-  const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
-  if (!fs.existsSync(oxlintrcPath)) {
-    fs.writeFileSync(
-      oxlintrcPath,
-      JSON.stringify({
-        plugins: [
-          "unicorn",
-          "typescript", 
-          "oxc",
-          "react",
-          "react_perf"
-        ],
-        categories: {
-          correctness: "error",
-          suspicious: "warn",
-          style: "off"
-        },
-        rules: {
-          "space-infix-ops": "error",
-          "eqeqeq": "error",
-          "curly": "error",
-          "yoda": "error",
-          "prefer-object-spread": "error",
-          "prefer-template": "warn",
-          "prefer-rest-params": "error",
-          "prefer-destructuring": "warn",
-          "prefer-exponentiation-operator": "error",
-          "operator-assignment": "warn",
-          "new-cap": "error",
-          "no-multi-assign": "error",
-          "no-nested-ternary": "warn",
-          "no-duplicate-imports": "error",
-          "no-template-curly-in-string": "error",
-          "no-lone-blocks": "error",
-          "no-labels": "error",
-          "no-extra-label": "error",
-          "sort-imports": "off",
-          
-          "unicorn/prefer-string-starts-ends-with": "error",
-          "unicorn/prefer-string-trim-start-end": "error",
-          "unicorn/prefer-spread": "error",
-          "unicorn/prefer-logical-operator-over-ternary": "warn",
-          "unicorn/prefer-includes": "error",
-          "unicorn/prefer-array-index-of": "warn",
-          "unicorn/prefer-object-from-entries": "warn",
-          "unicorn/prefer-optional-catch-binding": "error",
-          "unicorn/no-nested-ternary": "warn",
-          "unicorn/no-console-spaces": "error",
-          "unicorn/empty-brace-spaces": "error",
-          "unicorn/throw-new-error": "error",
-          "unicorn/number-literal-case": "error",
-          "unicorn/no-zero-fractions": "error",
-          "unicorn/consistent-existence-index-check": "warn",
-          
-          "no-var": "error",
-          "no-debugger": "error",
-          
-          "typescript/consistent-type-definitions": "error",
-          "typescript/consistent-type-imports": "error", 
-          "typescript/no-inferrable-types": "error",
-          "typescript/no-empty-interface": "warn",
-          "typescript/no-explicit-any": "warn",
-          "typescript/no-unnecessary-boolean-literal-compare": "error",
-          "typescript/no-unnecessary-type-arguments": "error",
-          "typescript/no-unnecessary-type-assertion": "error", 
-          "typescript/no-unnecessary-type-constraint": "error",
-          "typescript/non-nullable-type-assertion-style": "error",
-          "typescript/prefer-as-const": "error",
-          "typescript/array-type": "error",
-          "typescript/ban-ts-comment": "error",
-          "typescript/consistent-indexed-object-style": "error",
-          "typescript/no-namespace": "error",
-          "typescript/prefer-function-type": "error",
-          "typescript/prefer-namespace-keyword": "error",
-          "typescript/prefer-for-of": "warn",
-          "typescript/no-confusing-void-expression": "off",
-          "typescript/no-floating-promises": "off",
-          "typescript/no-var-requires": "off",
-          "typescript/no-misused-promises": "off",
-          "typescript/explicit-function-return-type": "off",
-          "typescript/promise-function-async": "off",
-          "typescript/no-for-in-array": "off",
-          "typescript/return-await": "off",
-          "typescript/no-non-null-assertion": "off",
-          
-          "react/self-closing-comp": "error",
-          "react/jsx-curly-brace-presence": "error",
-          "react/jsx-fragments": "error", 
-          "react/jsx-no-useless-fragment": "error",
-          "react/jsx-boolean-value": "error",
-          "react/rules-of-hooks": "error",
-          "react/no-unknown-property": "off",
-          "react/react-in-jsx-scope": "off",
-          
-          "import/no-duplicates": "error",
-          "import/first": "error",
-          "import/exports-last": "off",
-          "import/no-anonymous-default-export": "warn"
-        },
-        settings: {
-          "jsx-a11y": {
-            polymorphicPropName: null,
-            components: {},
-            attributes: {}
-          },
-          next: {
-            rootDir: []
-          },
-          react: {
-            formComponents: [],
-            linkComponents: [],
-            version: "detect"
-          },
-          jsdoc: {
-            ignorePrivate: false,
-            ignoreInternal: false,
-            ignoreReplacesDocs: true,
-            overrideReplacesDocs: true,
-            augmentsExtendsReplacesDocs: false,
-            implementsReplacesDocs: false,
-            exemptDestructuredRootsFromChecks: false,
-            tagNamePreference: {}
-          }
-        },
-        env: {
-          builtin: true,
-          browser: true,
-          es2021: true,
-          node: true,
-          worker: true,
-          mocha: true,
-          jest: true
-        },
-        globals: {
-          Atomics: "readonly",
-          SharedArrayBuffer: "readonly"
-        },
-        ignorePatterns: []
-      }, undefined, 2),
-    )
-    console.log('Created .oxlintrc.json')
-  } else {
-    console.log('.oxlintrc.json already exists, skipping creation.')
+  // 3. Install undefined-lint (which includes oxlint as dependency)
+  console.log('Installing @undefined/lint...')
+  try {
+    execSync('npm install --save-dev @undefined/lint', { stdio: 'inherit' })
+    console.log('✓ Installed @undefined/lint with oxlint')
+  } catch {
+    console.error('❌ Failed to install @undefined/lint')
+    process.exit(1)
   }
 
-  // 5. Add package.json scripts if not present
+  // 4. Create minimal .oxlintrc.json that extends from the package
+  const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
+  if (!fs.existsSync(oxlintrcPath)) {
+    const config = {
+      extends: ['./node_modules/@undefined/lint/.oxlintrc.json'],
+      // Users can override rules here:
+      // rules: {
+      //   "no-console": "warn"
+      // }
+    }
+    fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
+    console.log('✓ Created .oxlintrc.json extending @undefined/lint config')
+  } else {
+    console.log('⚠️  .oxlintrc.json already exists, skipping creation.')
+  }
+
+  // 5. Update package.json with lint scripts
   const packageJsonPath = path.resolve(process.cwd(), 'package.json')
   if (fs.existsSync(packageJsonPath)) {
     try {
@@ -249,85 +173,27 @@ const main = async (): Promise<void> => {
         packageJson.scripts = {}
       }
       
-      // Add lint script if not present
-      if (!packageJson.scripts.lint) {
-        packageJson.scripts.lint = 'oxlint --react-plugin'
-        console.log('Added lint script to package.json')
-      }
-      
-      // Add lint:fix script if not present
-      if (!packageJson.scripts['lint:fix']) {
-        packageJson.scripts['lint:fix'] = 'oxlint --react-plugin --fix'
-        console.log('Added lint:fix script to package.json')
-      }
+      // Add/update lint scripts
+      packageJson.scripts.lint = 'oxlint .'
+      packageJson.scripts['lint:fix'] = 'oxlint . --fix'
       
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
+      console.log('✓ Added lint scripts to package.json')
     } catch {
-      console.log('Could not update package.json scripts')
+      console.warn('⚠️  Could not update package.json scripts')
     }
   }
 
-  // 6. Create .vscode/settings.json for better IDE integration
-  const vscodeDir = path.resolve(process.cwd(), '.vscode')
-  if (!fs.existsSync(vscodeDir)) {
-    fs.mkdirSync(vscodeDir)
-  }
-
-  const settingsPath = path.resolve(vscodeDir, 'settings.json')
-  let settings = {}
-  if (fs.existsSync(settingsPath)) {
-    try {
-      settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'))
-    } catch {}
-  }
-  
-  // Update settings for oxlint (remove eslint settings, add general editor settings)
-  settings = {
-    ...settings,
-    'editor.tabSize': 2,
-    'editor.codeActionsOnSave': {
-      'source.fixAll': 'explicit',
-    },
-  }
-  
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
-  console.log('Updated .vscode/settings.json')
-
-  // 7. Create .vscode/extensions.json
-  const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
-  let extensions = { recommendations: [] }
-  if (fs.existsSync(extensionsPath)) {
-    try {
-      extensions = JSON.parse(fs.readFileSync(extensionsPath, 'utf8'))
-    } catch {}
-  }
-  
-  if (!extensions.recommendations) {
-    extensions.recommendations = []
-  }
-  
-  // Remove ESLint extension and add useful extensions
-  extensions.recommendations = extensions.recommendations.filter((ext: string) => ext !== 'dbaeumer.vscode-eslint')
-  
-  const recommendedExtensions = [
-    'bradlc.vscode-tailwindcss',
-    'ms-vscode.vscode-typescript-next',
-  ]
-  
-  for (const ext of recommendedExtensions) {
-    if (!extensions.recommendations.includes(ext)) {
-      extensions.recommendations.push(ext)
-    }
-  }
-  
-  fs.writeFileSync(extensionsPath, JSON.stringify(extensions, undefined, 2))
-  console.log('Updated .vscode/extensions.json')
+  // 6. Setup VSCode integration
+  setupVSCode()
 
   console.log('\n✅ Setup complete!')
-  console.log('You can now run:')
-  console.log('  npm run lint       - to check for issues')
-  console.log('  npm run lint:fix   - to auto-fix issues')
-  console.log('  npx oxlint --help  - for more options')
+  console.log('\n📋 Next steps:')
+  console.log('  npm run lint       - Check for linting issues')
+  console.log('  npm run lint:fix   - Auto-fix linting issues')
+  console.log('  npx oxlint --help  - View all oxlint options')
+  console.log('\n📖 Customize rules in .oxlintrc.json if needed')
+  console.log('🔧 JavaScript Standard Style is enforced by default')
 }
 
-main()
+main().catch(console.error)

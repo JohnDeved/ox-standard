@@ -1,10 +1,11 @@
 {
   "name": "@undefined/lint",
-  "version": "0.1.30",
-  "description": "extendable lint config used by undefined",
+  "version": "0.1.31",
+  "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
   "files": [
-    ".oxlintrc.json"
+    ".oxlintrc.json",
+    "setup-oxlint.ts"
   ],
   "bin": {
     "undefined-lint": "./setup-oxlint.ts",
@@ -21,5 +22,8 @@
   "devDependencies": {
     "@types/node": "^24.0.15",
     "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "oxlint": "^1.12.0"
   }
 }
