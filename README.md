@@ -1,15 +1,16 @@
 # ox-standard
 
-**Lightning-fast JavaScript Standard Style linting with oxlint** ⚡
+**Lightning-fast JavaScript Standard Style linting and formatting** ⚡
 
-A comprehensive TypeScript/React linting configuration that follows [JavaScript Standard Style](https://standardjs.com/) philosophy, powered by the blazing-fast Rust-based oxlint engine.
+A comprehensive TypeScript/React linting and formatting configuration that follows [JavaScript Standard Style](https://standardjs.com/) philosophy, powered by the blazing-fast Rust-based oxlint engine and Biome formatter.
 
 ## ✨ Why Choose This?
 
 - **🚀 10x Faster**: Rust-based oxlint delivers sub-second linting
-- **📏 Standard Style**: Enforces JavaScript Standard Style without configuration
+- **⚡ Instant Formatting**: Biome formatter with lightning-fast formatting
+- **📏 Standard Style**: Enforces JavaScript Standard Style for both linting and formatting
 - **🎯 Zero Config**: Works out of the box for TypeScript and React projects
-- **🧹 Clean Setup**: Automatically removes ESLint clutter from your project
+- **🧹 Clean Setup**: Automatically removes ESLint and Prettier clutter from your project
 - **⚙️ Extensible**: Easy to customize while maintaining Standard Style base
 
 ## 🎯 JavaScript Standard Style Enforced
@@ -34,11 +35,12 @@ npx github:JohnDeved/ox-standard
 ```
 
 That's it! The setup script will:
-1. Remove ESLint packages and configs 
+1. Remove ESLint and Prettier packages and configs 
 2. Install oxlint with Standard Style configuration
-3. Update your package.json scripts
-4. Configure VSCode settings and extensions
-5. Create an extensible `.oxlintrc.json`
+3. Install Biome formatter with Standard Style configuration
+4. Update your package.json scripts
+5. Configure VSCode settings and extensions
+6. Create extensible `.oxlintrc.json` and `biome.json`
 
 ## 📦 What You Get
 
@@ -47,37 +49,64 @@ That's it! The setup script will:
 {
   "scripts": {
     "lint": "oxlint .",
-    "lint:fix": "oxlint . --fix"
+    "lint:fix": "oxlint . --fix",
+    "format": "biome format --write .",
+    "format:check": "biome format ."
   },
   "devDependencies": {
-    "ox-standard": "github:JohnDeved/ox-standard"
+    "ox-standard": "github:JohnDeved/ox-standard",
+    "@biomejs/biome": "^2.2.0"
   }
 }
 ```
 
-### Minimal, Extensible Config
+### Minimal, Extensible Configs
 ```json
+// .oxlintrc.json
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"]
 }
 ```
 
+```json
+// biome.json
+{
+  "extends": ["./node_modules/ox-standard/biome.json"]
+}
+```
+
 ### VSCode Integration
-- Automatic code formatting on save
+- Automatic code formatting on save with Biome
 - 2-space indentation
 - Recommended extensions for TypeScript/React development
 - Standard Style formatting preferences
+- Biome formatter as default
 
 ## 🛠 Customization
 
-Override any rules in your `.oxlintrc.json`:
+Override any rules in your configurations:
 
+### Linting Rules (.oxlintrc.json)
 ```json
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
   "rules": {
     "no-console": "warn",
     "prefer-const": "off"
+  }
+}
+```
+
+### Formatting Options (biome.json)
+```json
+{
+  "extends": ["./node_modules/ox-standard/biome.json"],
+  "javascript": {
+    "formatter": {
+      "lineWidth": 100
+    }
+  }
+}
   }
 }
 ```
@@ -120,18 +149,19 @@ Create a test file to verify everything works:
 
 ```javascript
 // test.js
-var message = "Hello World"
+var message = "Hello World";
 if (message == "Hello World") {
-  console.log(message)
+  console.log(message);
 }
 ```
 
-Run the linter:
+Run the linter and formatter:
 ```bash
 npm run lint:fix
+npm run format
 ```
 
-You should see it automatically fix to:
+You should see it automatically transform to:
 ```javascript
 // test.js  
 const message = 'Hello World'
@@ -140,16 +170,27 @@ if (message === 'Hello World') {
 }
 ```
 
-## 🆚 Migration from ESLint
+The linter handles:
+- `var` → `const` conversion
+- `==` → `===` strict equality
+- Code quality improvements
+
+The formatter handles:
+- Semicolon removal
+- Double → single quote conversion
+- Proper spacing and indentation
+
+## 🆚 Migration from ESLint/Prettier
 
 The setup script handles migration automatically:
 
-1. **Detects** existing ESLint configs and packages
+1. **Detects** existing ESLint and Prettier configs and packages
 2. **Prompts** for removal confirmation  
-3. **Uninstalls** ESLint-related dependencies
+3. **Uninstalls** ESLint and Prettier-related dependencies
 4. **Installs** oxlint with Standard Style config
-5. **Updates** scripts and VSCode settings
-6. **Preserves** your existing code style preferences where possible
+5. **Installs** Biome formatter with Standard Style config
+6. **Updates** scripts and VSCode settings
+7. **Preserves** your existing code style preferences where possible
 
 ## 📖 Manual Installation
 
@@ -157,14 +198,17 @@ If you prefer manual setup:
 
 ```bash
 # Install the package from GitHub
-npm install --save-dev github:JohnDeved/ox-standard
+npm install --save-dev github:JohnDeved/ox-standard @biomejs/biome
 
-# Create config file
+# Create config files
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
+echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
 
 # Add scripts to package.json
 npm pkg set scripts.lint="oxlint ."
 npm pkg set scripts.lint:fix="oxlint . --fix"
+npm pkg set scripts.format="biome format --write ."
+npm pkg set scripts.format:check="biome format ."
 ```
 
 ## 🤝 Contributing
