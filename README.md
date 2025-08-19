@@ -115,9 +115,12 @@ Our configuration includes 70+ carefully selected rules across:
 - `prefer-string-starts-ends-with` - Modern string methods
 - `throw-new-error` - Proper error handling
 
-## 🚫 Semicolon Rule Extension
+## 🚫 Semicolon Rule Implementation
 
-Since oxlint doesn't yet natively support the ESLint `semi` rule, we've included a specialized extension that enforces JavaScript Standard Style's "no semicolons" philosophy:
+JavaScript Standard Style's "no semicolons" philosophy is enforced through two approaches:
+
+### Current: JavaScript Extension (CLI support)
+For immediate compatibility while native support is being developed:
 
 ```bash
 # Check for semicolon violations
@@ -127,13 +130,19 @@ npm run lint:semi
 npm run lint && npm run lint:semi
 ```
 
-The extension:
-- ✅ **Detects unnecessary semicolons** - Flags semicolons that don't serve a purpose
-- ✅ **Allows required semicolons** - Permits semicolons needed to avoid ASI (Automatic Semicolon Insertion) issues
-- ✅ **Standard Style compliant** - Follows JavaScript Standard Style guidelines exactly
-- ✅ **Helpful messages** - Provides clear explanations for each violation
+### Future: Native oxlint Rule (IDE support)
+We've created a native Rust implementation for oxc that provides:
+- ✅ **Real-time IDE feedback** - Error highlighting in VS Code, WebStorm, etc.
+- ✅ **Language server integration** - Works with oxc language server
+- ✅ **Performance benefits** - 10-100x faster than JavaScript extension
+- ✅ **Seamless integration** - Same output format as other oxlint rules
 
-**Example violations:**
+**Both implementations provide:**
+- 🔍 **Smart ASI detection** - Identifies when semicolons are needed to avoid automatic semicolon insertion issues
+- 🔧 **Auto-fixing** - Can remove unnecessary and add required semicolons
+- 📏 **Standard Style compliance** - Follows JavaScript Standard Style guidelines exactly
+
+**Example Standard Style enforcement:**
 ```javascript
 // ❌ Unnecessary semicolons (flagged)
 const message = 'Hello';
@@ -147,6 +156,8 @@ console.log(message)
 const a = 1
 ;(function() { console.log('needed') })()
 ```
+
+The native implementation is ready for contribution to oxc-project/oxc. Once merged, ox-standard will automatically use the native rule for full IDE support. See `oxc-contrib/` directory for implementation details.
 
 ## 🧪 Testing Your Setup
 
