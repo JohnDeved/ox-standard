@@ -64,65 +64,13 @@ const getTemplateVSCodeConfig = () => {
   const packageRoot = path.dirname(__filename)
   const templateVSCodeDir = path.resolve(packageRoot, '.vscode')
   
-  let templateExtensions = {}
-  let templateSettings = {}
-  
   // Read template extensions.json
   const templateExtensionsPath = path.resolve(templateVSCodeDir, 'extensions.json')
-  if (fs.existsSync(templateExtensionsPath)) {
-    try {
-      templateExtensions = JSON.parse(fs.readFileSync(templateExtensionsPath, 'utf8'))
-    } catch {
-      // Fallback to hardcoded if file can't be read
-      templateExtensions = {
-        recommendations: [
-          'biomejs.biome',
-          'bradlc.vscode-tailwindcss',
-          'ms-vscode.vscode-typescript-next',
-        ],
-      }
-    }
-  }
+  const templateExtensions = JSON.parse(fs.readFileSync(templateExtensionsPath, 'utf8'))
   
   // Read template settings.json
   const templateSettingsPath = path.resolve(templateVSCodeDir, 'settings.json')
-  if (fs.existsSync(templateSettingsPath)) {
-    try {
-      templateSettings = JSON.parse(fs.readFileSync(templateSettingsPath, 'utf8'))
-    } catch {
-      // Fallback to hardcoded if file can't be read
-      templateSettings = {
-        'editor.tabSize': 2,
-        'editor.insertSpaces': true,
-        'editor.detectIndentation': false,
-        'editor.codeActionsOnSave': {
-          'source.fixAll': 'explicit',
-          'source.organizeImports.biome': 'explicit',
-        },
-        'editor.formatOnSave': true,
-        'editor.defaultFormatter': 'biomejs.biome',
-        'files.eol': '\n',
-        '[javascript]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-        '[typescript]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-        '[javascriptreact]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-        '[typescriptreact]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-        '[json]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-        '[jsonc]': {
-          'editor.defaultFormatter': 'biomejs.biome',
-        },
-      }
-    }
-  }
+  const templateSettings = JSON.parse(fs.readFileSync(templateSettingsPath, 'utf8'))
   
   return { templateExtensions, templateSettings }
 }
