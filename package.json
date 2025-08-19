@@ -18,7 +18,7 @@
     "format": "npx @biomejs/biome format --write .",
     "format:check": "npx @biomejs/biome format .",
     "test:format": "vitest run lint-test/format.test.ts",
-    "lint": "npx oxlint --config .oxlintrc.json .",
+    "lint": "oxlint --fix .; biome format --write .",
     "fix": "npm run lint; npm run format"
   },
   "dependencies": {
