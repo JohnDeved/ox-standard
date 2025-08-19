@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const fs = require('fs')
-const path = require('path')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const reactCode = `
   import React from 'react'
@@ -25,11 +28,18 @@ const standardCode = `
   }
 `
 const standardFile = path.resolve(__dirname, 'StandardTest.ts')
-
 const reactFile = path.resolve(__dirname, 'TestComponent.tsx')
 
+interface OxlintDiagnostic {
+  code?: string
+}
+
+interface OxlintResult {
+  diagnostics?: OxlintDiagnostic[]
+}
+
 describe('oxlint rules via shared config', () => {
-  const runOxlint = (files, plugins = '') => {
+  const runOxlint = (files: string[], plugins = ''): OxlintResult => {
     try {
       const command = `npx oxlint --config ${path.resolve(__dirname, '../.oxlintrc.json')} ${plugins} --format json ${files.join(' ')}`
       const output = execSync(command, {
@@ -37,11 +47,11 @@ describe('oxlint rules via shared config', () => {
         encoding: 'utf8',
       })
       return JSON.parse(output)
-    } catch (error) {
+    } catch (error: unknown) {
       // oxlint exits with non-zero when issues are found
-      if (error.stdout) {
+      if (error && typeof error === 'object' && 'stdout' in error) {
         try {
-          return JSON.parse(error.stdout)
+          return JSON.parse((error as { stdout: string }).stdout)
         } catch {
           return { diagnostics: [] }
         }

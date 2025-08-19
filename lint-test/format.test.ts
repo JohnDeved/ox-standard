@@ -2,13 +2,28 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+interface BiomeConfig {
+  javascript?: {
+    formatter?: {
+      quoteStyle?: string
+      semicolons?: string
+    }
+  }
+  formatter?: {
+    indentWidth?: number
+    indentStyle?: string
+  }
+}
 
 describe('Biome formatting with JavaScript Standard Style', () => {
-  let testFiles = []
+  let testFiles: string[] = []
 
-  const createTestFile = (filename, content) => {
+  const createTestFile = (filename: string, content: string): string => {
     const filePath = path.resolve(__dirname, filename)
     fs.writeFileSync(filePath, content)
     testFiles.push(filePath)
@@ -25,17 +40,20 @@ describe('Biome formatting with JavaScript Standard Style', () => {
     testFiles = []
   })
 
-  const runBiomeFormatWrite = files => {
+  const runBiomeFormatWrite = (files: string[]): void => {
     try {
       const command = `npx biome format --write --config-path ${path.resolve(__dirname, '../biome.json')} ${files.join(' ')}`
       execSync(command, {
         cwd: path.resolve(__dirname, '..'),
         encoding: 'utf8',
       })
-    } catch (error) {
+    } catch (error: unknown) {
       // biome format --write may exit with non-zero, that's expected
-      if (!error.stdout && !error.stderr) {
-        throw error
+      if (error && typeof error === 'object' && 'stdout' in error && 'stderr' in error) {
+        const execError = error as { stdout?: string; stderr?: string }
+        if (!execError.stdout && !execError.stderr) {
+          throw error
+        }
       }
     }
   }
@@ -132,7 +150,7 @@ const fn3 = (x, y) => {
     const configPath = path.resolve(__dirname, '../biome.json')
     expect(fs.existsSync(configPath)).toBe(true)
 
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    const config: BiomeConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
     // Verify key formatting settings
     expect(config.javascript?.formatter?.quoteStyle).toBe('single')
