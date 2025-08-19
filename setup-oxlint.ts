@@ -4,22 +4,7 @@ import path from 'path'
 import readline from 'readline'
 import { execSync } from 'child_process'
 
-const LINT_CONFIG_FILES = [
-  '.oxlintrc.json',
-  'oxlint.json',
-  '.eslintrc',
-  '.eslintrc.json',
-  '.eslintrc.js',
-  '.eslintrc.cjs',
-  '.eslintrc.yaml',
-  '.eslintrc.yml',
-  'eslint.config.js',
-  'eslint.json',
-  'biome.json',
-  'biome.jsonc',
-  '.biome.json',
-  '.biome.jsonc',
-]
+const LINT_CONFIG_FILES = ['.oxlintrc.json', 'oxlint.json', '.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml', 'eslint.config.js', 'eslint.json', 'biome.json', 'biome.jsonc', '.biome.json', '.biome.jsonc']
 
 // List of ESLint-related packages to check/uninstall
 const ESLINT_PACKAGES = [
@@ -39,12 +24,7 @@ const ESLINT_PACKAGES = [
 ]
 
 // List of formatter packages to check/uninstall
-const FORMATTER_PACKAGES = [
-  'prettier',
-  '@prettier/plugin-tailwindcss',
-  'prettier-plugin-organize-imports',
-  'prettier-plugin-tailwindcss',
-]
+const FORMATTER_PACKAGES = ['prettier', '@prettier/plugin-tailwindcss', 'prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss']
 
 const prompt = (question: string): Promise<boolean> => {
   const rl = readline.createInterface({
@@ -65,19 +45,12 @@ const getTemplateVSCodeConfig = () => {
   const templateVSCodeDir = path.resolve(packageRoot, '.vscode')
 
   // Read template extensions.json
-  const templateExtensionsPath = path.resolve(
-    templateVSCodeDir,
-    'extensions.json'
-  )
-  const templateExtensions = JSON.parse(
-    fs.readFileSync(templateExtensionsPath, 'utf8')
-  )
+  const templateExtensionsPath = path.resolve(templateVSCodeDir, 'extensions.json')
+  const templateExtensions = JSON.parse(fs.readFileSync(templateExtensionsPath, 'utf8'))
 
   // Read template settings.json
   const templateSettingsPath = path.resolve(templateVSCodeDir, 'settings.json')
-  const templateSettings = JSON.parse(
-    fs.readFileSync(templateSettingsPath, 'utf8')
-  )
+  const templateSettings = JSON.parse(fs.readFileSync(templateSettingsPath, 'utf8'))
 
   return { templateExtensions, templateSettings }
 }
@@ -92,10 +65,7 @@ const setupVSCode = () => {
 
   // Setup recommended extensions
   const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
-  fs.writeFileSync(
-    extensionsPath,
-    JSON.stringify(templateExtensions, undefined, 2)
-  )
+  fs.writeFileSync(extensionsPath, JSON.stringify(templateExtensions, undefined, 2))
   console.log('✓ Created .vscode/extensions.json with recommended extensions')
 
   // Setup VSCode settings
@@ -121,20 +91,14 @@ const setupVSCode = () => {
   }
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
-  console.log(
-    '✓ Updated .vscode/settings.json with JavaScript Standard Style preferences'
-  )
+  console.log('✓ Updated .vscode/settings.json with JavaScript Standard Style preferences')
 }
 
 const main = async (): Promise<void> => {
-  console.log(
-    '🚀 Setting up oxlint with JavaScript Standard Style and Biome formatter...\n'
-  )
+  console.log('🚀 Setting up oxlint with JavaScript Standard Style and Biome formatter...\n')
 
   // 1. Check for existing linting config files
-  const foundConfigs = LINT_CONFIG_FILES.filter(f =>
-    fs.existsSync(path.resolve(process.cwd(), f))
-  )
+  const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
   if (foundConfigs.length) {
     console.log('Found existing lint config files:', foundConfigs.join(', '))
     const shouldRemove = await prompt('Remove them before continuing?')
@@ -144,9 +108,7 @@ const main = async (): Promise<void> => {
         console.log('✓ Removed', f)
       }
     } else {
-      console.log(
-        '❌ Aborting setup. Please remove existing config files first.'
-      )
+      console.log('❌ Aborting setup. Please remove existing config files first.')
       process.exit(1)
     }
   }
@@ -154,20 +116,13 @@ const main = async (): Promise<void> => {
   // 2. Check for installed ESLint-related packages
   let installedPackages: string[] = []
   try {
-    const pkgJson = JSON.parse(
-      fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
-    )
+    const pkgJson = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'))
     const allDeps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
-    installedPackages = [...ESLINT_PACKAGES, ...FORMATTER_PACKAGES].filter(
-      pkg => allDeps?.[pkg]
-    )
+    installedPackages = [...ESLINT_PACKAGES, ...FORMATTER_PACKAGES].filter(pkg => allDeps?.[pkg])
   } catch {}
 
   if (installedPackages.length) {
-    console.log(
-      'Found installed ESLint/formatter packages:',
-      installedPackages.join(', ')
-    )
+    console.log('Found installed ESLint/formatter packages:', installedPackages.join(', '))
     const shouldUninstall = await prompt('Uninstall them before continuing?')
     if (shouldUninstall) {
       try {
@@ -176,15 +131,11 @@ const main = async (): Promise<void> => {
         })
         console.log('✓ Uninstalled packages:', installedPackages.join(', '))
       } catch {
-        console.error(
-          '❌ Failed to uninstall some packages. Please check manually.'
-        )
+        console.error('❌ Failed to uninstall some packages. Please check manually.')
         process.exit(1)
       }
     } else {
-      console.log(
-        '❌ Aborting setup. Please remove conflicting packages first.'
-      )
+      console.log('❌ Aborting setup. Please remove conflicting packages first.')
       process.exit(1)
     }
   }
@@ -240,13 +191,9 @@ const main = async (): Promise<void> => {
       }
 
       // Add/update lint script that does both linting with fixes and formatting
-      packageJson.scripts.lint =
-        'oxlint --fix --ignore-pattern "node_modules/**" .; biome format --write .'
+      packageJson.scripts.lint = 'oxlint --fix .; biome format --write .'
 
-      fs.writeFileSync(
-        packageJsonPath,
-        JSON.stringify(packageJson, undefined, 2)
-      )
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
       console.log('✓ Added lint script to package.json')
     } catch {
       console.warn('⚠️  Could not update package.json scripts')
@@ -262,9 +209,7 @@ const main = async (): Promise<void> => {
   console.log('  npx oxlint --help  - View all oxlint options')
   console.log('  npx biome --help   - View all biome options')
   console.log('\n📖 Customize rules in .oxlintrc.json and biome.json if needed')
-  console.log(
-    '🔧 JavaScript Standard Style is enforced for both linting and formatting'
-  )
+  console.log('🔧 JavaScript Standard Style is enforced for both linting and formatting')
 }
 
 main().catch(console.error)

@@ -87,7 +87,7 @@ npm install --save-dev github:JohnDeved/ox-standard
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
 
-npm pkg set scripts.lint="oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
+npm pkg set scripts.lint="oxlint --fix .; biome format --write ."
 ```
 
 ## 🔧 Complete Rule Reference
