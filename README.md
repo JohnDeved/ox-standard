@@ -2,145 +2,41 @@
 
 **Lightning-fast JavaScript Standard Style linting and formatting** ⚡
 
-A comprehensive TypeScript/React linting and formatting configuration that follows [JavaScript Standard Style](https://standardjs.com/) philosophy, powered by the blazing-fast Rust-based oxlint engine and Biome formatter.
-
-## ✨ Why Choose This?
-
-- **🚀 10x Faster**: Rust-based oxlint delivers sub-second linting
-- **⚡ Instant Formatting**: Biome formatter with lightning-fast formatting
-- **📏 Standard Style**: Enforces JavaScript Standard Style for both linting and formatting
-- **🎯 Zero Config**: Works out of the box for TypeScript and React projects
-- **🧹 Clean Setup**: Automatically removes ESLint and Prettier clutter from your project
-- **⚙️ Extensible**: Easy to customize while maintaining Standard Style base
-
-## 🎯 JavaScript Standard Style Enforced
-
-This configuration implements the complete [JavaScript Standard Style](https://standardjs.com/) philosophy:
-
-- ✅ **No semicolons** - Let JavaScript handle automatic insertion
-- ✅ **Single quotes** for strings
-- ✅ **2 spaces** for indentation
-- ✅ **Strict equality** - Always use `===` instead of `==`
-- ✅ **Modern ES6+** - `const`/`let`, template literals, destructuring
-- ✅ **Clean patterns** - No unused variables, proper spacing
-- ✅ **React hooks** - Proper hooks usage patterns
-- ✅ **TypeScript** - Consistent type imports and modern syntax
+Drop-in replacement for ESLint/Prettier that's 10x faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and Biome formatter for TypeScript/React projects.
 
 ## 🚀 Quick Setup
 
-Replace ESLint in your project with one command:
+Replace ESLint/Prettier in your project with one command:
 
 ```bash
 npx github:JohnDeved/ox-standard
 ```
 
-That's it! The setup script will:
-1. Remove ESLint and Prettier packages and configs 
-2. Install oxlint with Standard Style configuration
-3. Install Biome formatter with Standard Style configuration
-4. Update your package.json scripts
-5. Configure VSCode settings and extensions
-6. Create extensible `.oxlintrc.json` and `biome.json`
+That's it! The setup automatically:
+- ✅ Removes ESLint and Prettier packages and configs 
+- ✅ Installs oxlint with Standard Style configuration
+- ✅ Installs Biome formatter with Standard Style configuration
+- ✅ Updates your package.json scripts
+- ✅ Configures VSCode settings and extensions
 
-## 📦 What You Get
+## ✨ What You Get
 
-### Optimized Package.json
-```json
-{
-  "scripts": {
-    "lint": "oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
-  },
-  "devDependencies": {
-    "ox-standard": "github:JohnDeved/ox-standard",
-    "@biomejs/biome": "^2.2.0"
-  }
-}
-```
+### 🚀 10x Faster Performance
+- **Rust-based oxlint**: Sub-second linting even on large codebases
+- **Biome formatter**: Lightning-fast formatting
+- **Single command**: `npm run lint` handles both linting and formatting
 
-### Minimal, Extensible Configs
-```json
-// .oxlintrc.json
-{
-  "extends": ["./node_modules/ox-standard/.oxlintrc.json"]
-}
-```
+### 📏 JavaScript Standard Style Enforced
+- No semicolons, single quotes, 2-space indentation
+- Strict equality (`===`), modern ES6+ patterns
+- React hooks best practices, TypeScript consistency
 
-```json
-// biome.json
-{
-  "extends": ["./node_modules/ox-standard/biome.json"]
-}
-```
+### 🎯 Zero Configuration
+- Works out of the box for TypeScript and React
+- Extensible configs you can customize
+- VSCode integration with recommended extensions
 
-### VSCode Integration
-- Automatic code formatting on save with Biome
-- 2-space indentation
-- Recommended extensions for TypeScript/React development
-- Standard Style formatting preferences
-- Biome formatter as default
-
-## 🛠 Customization
-
-Override any rules in your configurations:
-
-### Linting Rules (.oxlintrc.json)
-```json
-{
-  "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
-  "rules": {
-    "no-console": "warn",
-    "prefer-const": "off"
-  }
-}
-```
-
-### Formatting Options (biome.json)
-```json
-{
-  "extends": ["./node_modules/ox-standard/biome.json"],
-  "javascript": {
-    "formatter": {
-      "lineWidth": 100
-    }
-  }
-}
-  }
-}
-```
-
-## 🔧 Rules Included
-
-Our configuration includes 70+ carefully selected rules across:
-
-### Core JavaScript Standard Style
-- `eqeqeq` - Strict equality enforcement
-- `curly` - Consistent brace style  
-- `no-var` - Modern variable declarations
-- `space-infix-ops` - Proper operator spacing
-- `yoda` - Readable comparisons
-
-### Modern JavaScript
-- `prefer-template` - Template literal preference
-- `prefer-destructuring` - Modern assignment patterns
-- `prefer-object-spread` - Clean object composition
-- `no-duplicate-imports` - Import organization
-
-### React Best Practices  
-- `rules-of-hooks` - Proper hooks usage
-- `jsx-curly-brace-presence` - Clean JSX syntax
-- `self-closing-comp` - Concise components
-
-### TypeScript Integration
-- `consistent-type-imports` - Clean type imports
-- `array-type` - Consistent array syntax
-- `prefer-as-const` - Type assertion best practices
-
-### Enhanced Patterns (Unicorn)
-- `prefer-includes` - Better array methods
-- `prefer-string-starts-ends-with` - Modern string methods
-- `throw-new-error` - Proper error handling
-
-## 🧪 Testing Your Setup
+## 🧪 Quick Test
 
 Create a test file to verify everything works:
 
@@ -152,12 +48,9 @@ if (message == "Hello World") {
 }
 ```
 
-Run the linter and formatter:
-```bash
-npm run lint
-```
+Run: `npm run lint`
 
-You should see it automatically transform to:
+Automatically transforms to:
 ```javascript
 // test.js  
 const message = 'Hello World'
@@ -166,45 +59,87 @@ if (message === 'Hello World') {
 }
 ```
 
-The linter handles:
-- `var` → `const` conversion
-- `==` → `===` strict equality
-- Code quality improvements
+## 🛠 Customization
 
-The formatter handles:
-- Semicolon removal
-- Double → single quote conversion
-- Proper spacing and indentation
+Need to override rules? Easy:
 
-Both are run automatically with the single `npm run lint` command.
+```json
+// .oxlintrc.json
+{
+  "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
+  "rules": {
+    "no-console": "warn"
+  }
+}
+```
 
-## 🆚 Migration from ESLint/Prettier
+```json
+// biome.json  
+{
+  "extends": ["./node_modules/ox-standard/biome.json"],
+  "javascript": {
+    "formatter": {
+      "lineWidth": 100
+    }
+  }
+}
+```
 
-The setup script handles migration automatically:
+## 🆚 Migrating from ESLint/Prettier?
 
-1. **Detects** existing ESLint and Prettier configs and packages
-2. **Prompts** for removal confirmation  
-3. **Uninstalls** ESLint and Prettier-related dependencies
-4. **Installs** oxlint with Standard Style config
-5. **Installs** Biome formatter with Standard Style config
-6. **Updates** scripts and VSCode settings
-7. **Preserves** your existing code style preferences where possible
+The setup script handles everything automatically:
+1. Detects existing ESLint/Prettier configs and packages
+2. Prompts for removal confirmation  
+3. Uninstalls old dependencies
+4. Installs and configures ox-standard
+5. Updates VSCode settings
+
+---
 
 ## 📖 Manual Installation
 
-If you prefer manual setup:
+Prefer manual setup?
 
 ```bash
-# Install the package from GitHub
 npm install --save-dev github:JohnDeved/ox-standard @biomejs/biome
 
-# Create config files
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
 
-# Add scripts to package.json
 npm pkg set scripts.lint="oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
 ```
+
+## 🔧 Complete Rule Reference
+
+70+ carefully selected rules across:
+
+### JavaScript Standard Style
+- `eqeqeq` - Strict equality (`===`)
+- `curly` - Consistent braces  
+- `no-var` - Use `const`/`let`
+- `space-infix-ops` - Proper spacing
+- `yoda` - Readable comparisons
+
+### Modern JavaScript  
+- `prefer-template` - Template literals
+- `prefer-destructuring` - Modern patterns
+- `prefer-object-spread` - Clean objects
+- `no-duplicate-imports` - Organized imports
+
+### React Best Practices
+- `rules-of-hooks` - Proper hooks usage
+- `jsx-curly-brace-presence` - Clean JSX
+- `self-closing-comp` - Concise components
+
+### TypeScript Integration
+- `consistent-type-imports` - Clean imports
+- `array-type` - Consistent syntax  
+- `prefer-as-const` - Type assertions
+
+### Enhanced Patterns (Unicorn)
+- `prefer-includes` - Better array methods
+- `prefer-string-starts-ends-with` - Modern strings
+- `throw-new-error` - Proper errors
 
 ## 🤝 Contributing
 

@@ -49,7 +49,12 @@ describe('Biome formatting with JavaScript Standard Style', () => {
       })
     } catch (error: unknown) {
       // biome format --write may exit with non-zero, that's expected
-      if (error && typeof error === 'object' && 'stdout' in error && 'stderr' in error) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'stdout' in error &&
+        'stderr' in error
+      ) {
         const execError = error as { stdout?: string; stderr?: string }
         if (!execError.stdout && !execError.stderr) {
           throw error
