@@ -25,11 +25,11 @@
     "tsx": "^4.20.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.0",
     "@types/node": "^24.0.15",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
+    "@biomejs/biome": "^2.2.0",
     "oxlint": "^1.12.0"
   }
 }

@@ -246,19 +246,14 @@ const main = async (): Promise<void> => {
         packageJson.scripts = {}
       }
 
-      // Add/update lint scripts
-      packageJson.scripts.lint = 'oxlint .'
-      packageJson.scripts['lint:fix'] = 'oxlint . --fix'
-
-      // Add/update format scripts
-      packageJson.scripts.format = 'biome format --write .'
-      packageJson.scripts['format:check'] = 'biome format .'
+      // Add/update lint script that does both linting with fixes and formatting
+      packageJson.scripts.lint = 'oxlint --fix --ignore-pattern "node_modules/**" .; biome format --write .'
 
       fs.writeFileSync(
         packageJsonPath,
         JSON.stringify(packageJson, undefined, 2)
       )
-      console.log('✓ Added lint and format scripts to package.json')
+      console.log('✓ Added lint script to package.json')
     } catch {
       console.warn('⚠️  Could not update package.json scripts')
     }
@@ -269,12 +264,7 @@ const main = async (): Promise<void> => {
 
   console.log('\n✅ Setup complete!')
   console.log('\n📋 Next steps:')
-  console.log('  npm run lint       - Check for linting issues')
-  console.log('  npm run lint:fix   - Auto-fix linting issues')
-  console.log(
-    '  npm run format     - Format code with JavaScript Standard Style'
-  )
-  console.log('  npm run format:check - Check code formatting')
+  console.log('  npm run lint       - Lint and format code automatically')
   console.log('  npx oxlint --help  - View all oxlint options')
   console.log('  npx biome --help   - View all biome options')
   console.log('\n📖 Customize rules in .oxlintrc.json and biome.json if needed')

@@ -48,10 +48,7 @@ That's it! The setup script will:
 ```json
 {
   "scripts": {
-    "lint": "oxlint .",
-    "lint:fix": "oxlint . --fix",
-    "format": "biome format --write .",
-    "format:check": "biome format ."
+    "lint": "oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
   },
   "devDependencies": {
     "ox-standard": "github:JohnDeved/ox-standard",
@@ -157,8 +154,7 @@ if (message == "Hello World") {
 
 Run the linter and formatter:
 ```bash
-npm run lint:fix
-npm run format
+npm run lint
 ```
 
 You should see it automatically transform to:
@@ -179,6 +175,8 @@ The formatter handles:
 - Semicolon removal
 - Double → single quote conversion
 - Proper spacing and indentation
+
+Both are run automatically with the single `npm run lint` command.
 
 ## 🆚 Migration from ESLint/Prettier
 
@@ -205,10 +203,7 @@ echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.js
 echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
 
 # Add scripts to package.json
-npm pkg set scripts.lint="oxlint ."
-npm pkg set scripts.lint:fix="oxlint . --fix"
-npm pkg set scripts.format="biome format --write ."
-npm pkg set scripts.format:check="biome format ."
+npm pkg set scripts.lint="oxlint --fix --ignore-pattern \"node_modules/**\" .; biome format --write ."
 ```
 
 ## 🤝 Contributing
