@@ -6,7 +6,8 @@
   "files": [
     ".oxlintrc.json",
     "biome.json",
-    "setup-oxlint.ts"
+    "setup-oxlint.ts",
+    ".vscode"
   ],
   "bin": {
     "ox-standard": "./setup-oxlint.ts",
