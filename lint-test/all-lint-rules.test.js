@@ -88,5 +88,48 @@ describe('oxlint rules via shared config', () => {
     expect(config.plugins).toContain('typescript')
     expect(config.plugins).toContain('react')
     expect(config.rules).toBeDefined()
+    expect(config.rules.semi).toBe('off') // Check that semi rule is configured
+  })
+
+  it('should detect semicolon violations with semi rule extension', async () => {
+    const { SemiRuleExtension } = require('../semi-rule-extension.js')
+    
+    // Test file with unnecessary semicolons
+    const testFile = path.resolve(__dirname, 'SemiTest.js')
+    const codeWithSemis = `const message = "Hello";
+console.log(message);`
+    
+    fs.writeFileSync(testFile, codeWithSemis)
+    
+    const extension = new SemiRuleExtension()
+    const results = await extension.lint([testFile])
+    
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.some(r => r.rule === 'semi')).toBe(true)
+    
+    fs.unlinkSync(testFile)
+  })
+
+  it('should not flag proper Standard Style code with semi rule extension', async () => {
+    const { SemiRuleExtension } = require('../semi-rule-extension.js')
+    
+    // Test file without unnecessary semicolons
+    const testFile = path.resolve(__dirname, 'SemiGoodTest.js')
+    const goodCode = `const message = 'Hello'
+console.log(message)
+
+// Required semicolon for ASI
+const a = 1
+;(function() { console.log('ok') })()`
+    
+    fs.writeFileSync(testFile, goodCode)
+    
+    const extension = new SemiRuleExtension()
+    const results = await extension.lint([testFile])
+    
+    // Should not flag the properly used required semicolon
+    expect(results.length).toBe(0)
+    
+    fs.unlinkSync(testFile)
   })
 })

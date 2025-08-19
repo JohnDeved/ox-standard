@@ -5,16 +5,20 @@
   "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
   "files": [
     ".oxlintrc.json",
-    "setup-oxlint.ts"
+    "setup-oxlint.ts",
+    "semi-rule-extension.js"
   ],
   "bin": {
     "ox-standard": "./setup-oxlint.ts",
-    "setup-oxlint": "./setup-oxlint.ts"
+    "setup-oxlint": "./setup-oxlint.ts",
+    "ox-standard-semi": "./semi-rule-extension.js"
   },
   "scripts": {
-    "test:lint": "vitest run lint-test/all-lint-rules.test.js"
+    "test:lint": "vitest run lint-test/all-lint-rules.test.js",
+    "lint:semi": "node semi-rule-extension.js"
   },
   "dependencies": {
+    "glob": "^10.0.0",
     "oxlint": "^1.12.0",
     "tsx": "^4.20.3"
   },

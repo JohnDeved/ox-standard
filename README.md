@@ -92,6 +92,7 @@ Our configuration includes 70+ carefully selected rules across:
 - `no-var` - Modern variable declarations
 - `space-infix-ops` - Proper operator spacing
 - `yoda` - Readable comparisons
+- `semi` - No unnecessary semicolons (via extension)
 
 ### Modern JavaScript
 - `prefer-template` - Template literal preference
@@ -113,6 +114,39 @@ Our configuration includes 70+ carefully selected rules across:
 - `prefer-includes` - Better array methods
 - `prefer-string-starts-ends-with` - Modern string methods
 - `throw-new-error` - Proper error handling
+
+## 🚫 Semicolon Rule Extension
+
+Since oxlint doesn't yet natively support the ESLint `semi` rule, we've included a specialized extension that enforces JavaScript Standard Style's "no semicolons" philosophy:
+
+```bash
+# Check for semicolon violations
+npm run lint:semi
+
+# Run all linting (oxlint + semicolon check)
+npm run lint && npm run lint:semi
+```
+
+The extension:
+- ✅ **Detects unnecessary semicolons** - Flags semicolons that don't serve a purpose
+- ✅ **Allows required semicolons** - Permits semicolons needed to avoid ASI (Automatic Semicolon Insertion) issues
+- ✅ **Standard Style compliant** - Follows JavaScript Standard Style guidelines exactly
+- ✅ **Helpful messages** - Provides clear explanations for each violation
+
+**Example violations:**
+```javascript
+// ❌ Unnecessary semicolons (flagged)
+const message = 'Hello';
+console.log(message);
+
+// ✅ Proper Standard Style
+const message = 'Hello'
+console.log(message)
+
+// ✅ Required semicolon (allowed)
+const a = 1
+;(function() { console.log('needed') })()
+```
 
 ## 🧪 Testing Your Setup
 

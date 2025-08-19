@@ -50,6 +50,7 @@
     
     "no-var": "error",
     "no-debugger": "error",
+    "semi": "off",
     
     "typescript/consistent-type-definitions": "error",
     "typescript/consistent-type-imports": "error", 

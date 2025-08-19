@@ -176,6 +176,7 @@ const main = async (): Promise<void> => {
       // Add/update lint scripts
       packageJson.scripts.lint = 'oxlint .'
       packageJson.scripts['lint:fix'] = 'oxlint . --fix'
+      packageJson.scripts['lint:semi'] = 'node ./node_modules/ox-standard/semi-rule-extension.js .'
       
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
       console.log('✓ Added lint scripts to package.json')
@@ -191,9 +192,11 @@ const main = async (): Promise<void> => {
   console.log('\n📋 Next steps:')
   console.log('  npm run lint       - Check for linting issues')
   console.log('  npm run lint:fix   - Auto-fix linting issues')
+  console.log('  npm run lint:semi  - Check semicolon usage (JavaScript Standard Style)')
   console.log('  npx oxlint --help  - View all oxlint options')
   console.log('\n📖 Customize rules in .oxlintrc.json if needed')
   console.log('🔧 JavaScript Standard Style is enforced by default')
+  console.log('🚫 Semicolon rule extension included for complete Standard Style compliance')
 }
 
 main().catch(console.error)
