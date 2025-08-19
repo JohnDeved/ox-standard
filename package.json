@@ -2,7 +2,7 @@
   "name": "ox-standard",
   "version": "0.1.31",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
-  "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
+  "author": "Johann Berger <johann@objekt.stream>",
   "files": [
     ".oxlintrc.json",
     "biome.json",
