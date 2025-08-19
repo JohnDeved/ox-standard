@@ -59,22 +59,33 @@ const prompt = (question: string): Promise<boolean> => {
   })
 }
 
+const getTemplateVSCodeConfig = () => {
+  // Read template files from this package's .vscode directory
+  const packageRoot = path.dirname(__filename)
+  const templateVSCodeDir = path.resolve(packageRoot, '.vscode')
+  
+  // Read template extensions.json
+  const templateExtensionsPath = path.resolve(templateVSCodeDir, 'extensions.json')
+  const templateExtensions = JSON.parse(fs.readFileSync(templateExtensionsPath, 'utf8'))
+  
+  // Read template settings.json
+  const templateSettingsPath = path.resolve(templateVSCodeDir, 'settings.json')
+  const templateSettings = JSON.parse(fs.readFileSync(templateSettingsPath, 'utf8'))
+  
+  return { templateExtensions, templateSettings }
+}
+
 const setupVSCode = () => {
   const vscodeDir = path.resolve(process.cwd(), '.vscode')
   if (!fs.existsSync(vscodeDir)) {
     fs.mkdirSync(vscodeDir)
   }
 
+  const { templateExtensions, templateSettings } = getTemplateVSCodeConfig()
+
   // Setup recommended extensions
   const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
-  const extensions = {
-    recommendations: [
-      'biomejs.biome',
-      'bradlc.vscode-tailwindcss',
-      'ms-vscode.vscode-typescript-next',
-    ],
-  }
-  fs.writeFileSync(extensionsPath, JSON.stringify(extensions, undefined, 2))
+  fs.writeFileSync(extensionsPath, JSON.stringify(templateExtensions, undefined, 2))
   console.log('✓ Created .vscode/extensions.json with recommended extensions')
 
   // Setup VSCode settings
@@ -88,34 +99,7 @@ const setupVSCode = () => {
 
   const settings = {
     ...existingSettings,
-    'editor.tabSize': 2,
-    'editor.insertSpaces': true,
-    'editor.detectIndentation': false,
-    'editor.codeActionsOnSave': {
-      'source.fixAll': 'explicit',
-      'source.organizeImports.biome': 'explicit',
-    },
-    'editor.formatOnSave': true,
-    'editor.defaultFormatter': 'biomejs.biome',
-    'files.eol': '\n',
-    '[javascript]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
-    '[typescript]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
-    '[javascriptreact]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
-    '[typescriptreact]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
-    '[json]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
-    '[jsonc]': {
-      'editor.defaultFormatter': 'biomejs.biome',
-    },
+    ...templateSettings,
   }
 
   // Remove any ESLint-specific and Prettier-specific settings
