@@ -90,13 +90,111 @@ const main = async (): Promise<void> => {
   console.log('Installing JohnDeved/undefined-lint...')
   execSync('npm i JohnDeved/undefined-lint', { stdio: 'inherit' })
 
+  // 3.1. Install oxlint locally
+  console.log('Installing oxlint...')
+  execSync('npm i oxlint', { stdio: 'inherit' })
+
   // 4. Create .oxlintrc.json if not present
   const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
   if (!fs.existsSync(oxlintrcPath)) {
     fs.writeFileSync(
       oxlintrcPath,
       JSON.stringify({
-        extends: ['./node_modules/@undefined/lint/.oxlintrc.json'],
+        plugins: [
+          "unicorn",
+          "typescript", 
+          "oxc",
+          "react",
+          "react_perf"
+        ],
+        categories: {
+          correctness: "error",
+          suspicious: "warn",
+          style: "warn"
+        },
+        rules: {
+          "space-infix-ops": "error",
+          
+          "typescript/consistent-type-definitions": "error",
+          "typescript/consistent-type-imports": "error", 
+          "typescript/no-inferrable-types": "error",
+          "typescript/no-empty-interface": "warn",
+          "typescript/no-explicit-any": "warn",
+          "typescript/no-unnecessary-boolean-literal-compare": "error",
+          "typescript/no-unnecessary-type-arguments": "error",
+          "typescript/no-unnecessary-type-assertion": "error", 
+          "typescript/no-unnecessary-type-constraint": "error",
+          "typescript/non-nullable-type-assertion-style": "error",
+          "typescript/prefer-as-const": "error",
+          "typescript/no-confusing-void-expression": "off",
+          "typescript/no-floating-promises": "off",
+          "typescript/no-var-requires": "off",
+          "typescript/no-misused-promises": "off",
+          "typescript/explicit-function-return-type": "off",
+          "typescript/promise-function-async": "off",
+          "typescript/no-for-in-array": "off",
+          "typescript/return-await": "off",
+          "typescript/no-non-null-assertion": "off",
+          
+          "react/self-closing-comp": "error",
+          "react/jsx-curly-brace-presence": "error",
+          "react/jsx-fragments": "error", 
+          "react/jsx-no-useless-fragment": "error",
+          "react/no-unknown-property": "off",
+          "react/react-in-jsx-scope": "off",
+          "react/jsx-boolean-value": "error",
+          
+          "typescript/array-type": "error",
+          "typescript/ban-ts-comment": "error",
+          "typescript/consistent-indexed-object-style": "error",
+          "typescript/no-namespace": "error",
+          "typescript/prefer-function-type": "error",
+          "typescript/prefer-namespace-keyword": "error",
+          
+          "unicorn/prefer-string-starts-ends-with": "error",
+          
+          "no-var": "error",
+          "no-debugger": "error"
+        },
+        settings: {
+          "jsx-a11y": {
+            polymorphicPropName: null,
+            components: {},
+            attributes: {}
+          },
+          next: {
+            rootDir: []
+          },
+          react: {
+            formComponents: [],
+            linkComponents: [],
+            version: "detect"
+          },
+          jsdoc: {
+            ignorePrivate: false,
+            ignoreInternal: false,
+            ignoreReplacesDocs: true,
+            overrideReplacesDocs: true,
+            augmentsExtendsReplacesDocs: false,
+            implementsReplacesDocs: false,
+            exemptDestructuredRootsFromChecks: false,
+            tagNamePreference: {}
+          }
+        },
+        env: {
+          builtin: true,
+          browser: true,
+          es2021: true,
+          node: true,
+          worker: true,
+          mocha: true,
+          jest: true
+        },
+        globals: {
+          Atomics: "readonly",
+          SharedArrayBuffer: "readonly"
+        },
+        ignorePatterns: []
       }, undefined, 2),
     )
     console.log('Created .oxlintrc.json')
