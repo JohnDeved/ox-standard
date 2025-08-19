@@ -125,5 +125,5 @@
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
-  "ignorePatterns": []
+  "ignorePatterns": ["node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
 }
