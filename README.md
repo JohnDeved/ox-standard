@@ -4,6 +4,8 @@
 
 Drop-in replacement for ESLint/Prettier that's 10x faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and Biome formatter for TypeScript/React projects.
 
+[<img src="https://github.com/user-attachments/assets/f2379480-28d3-453c-8c09-8bf7aaeede86" width=100px>](https://standardjs.com/)
+
 ## 🚀 Quick Setup
 
 Replace ESLint/Prettier in your project with one command:
