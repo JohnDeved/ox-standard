@@ -77,8 +77,6 @@ The setup script handles everything automatically:
 4. Installs and configures ox-standard
 5. Updates VSCode settings
 
----
-
 ## 📖 Manual Installation
 
 Prefer manual setup?
