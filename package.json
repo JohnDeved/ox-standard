@@ -5,6 +5,7 @@
   "author": "Johann Berger <j.berger@alpin11.at> (https://www.alpin11.at/)",
   "files": [
     ".oxlintrc.json",
+    "biome.json",
     "setup-oxlint.ts"
   ],
   "bin": {
@@ -12,13 +13,17 @@
     "setup-oxlint": "./setup-oxlint.ts"
   },
   "scripts": {
-    "test:lint": "vitest run lint-test/all-lint-rules.test.js"
+    "test:lint": "vitest run lint-test/all-lint-rules.test.js",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "test:format": "vitest run lint-test/format.test.js"
   },
   "dependencies": {
     "oxlint": "^1.12.0",
     "tsx": "^4.20.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
     "@types/node": "^24.0.15",
     "vitest": "^3.2.4"
   },
