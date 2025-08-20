@@ -15,7 +15,7 @@ describe('VSCode extension auto-installation', () => {
     // Create temporary test directory
     testDir = path.join(__dirname, '..', 'temp-test-' + Date.now())
     fs.mkdirSync(testDir, { recursive: true })
-    
+
     // Save original PATH
     originalPath = process.env.PATH || ''
   })
@@ -23,7 +23,7 @@ describe('VSCode extension auto-installation', () => {
   afterEach(() => {
     // Restore original PATH
     process.env.PATH = originalPath
-    
+
     // Clean up test directory
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true })
@@ -33,12 +33,12 @@ describe('VSCode extension auto-installation', () => {
   it('should detect when VSCode CLI is not available', () => {
     // Make sure code command is not available
     process.env.PATH = '/non-existent-path'
-    
+
     // Import the functions we want to test
     // Note: We need to test the actual implementation
     const setupScript = path.resolve(__dirname, '../setup-oxlint.ts')
     const scriptContent = fs.readFileSync(setupScript, 'utf8')
-    
+
     // Verify the isVSCodeCliAvailable function exists in the script
     expect(scriptContent).toContain('isVSCodeCliAvailable')
     expect(scriptContent).toContain('getInstalledVSCodeExtensions')
@@ -49,24 +49,24 @@ describe('VSCode extension auto-installation', () => {
     // Create a package.json file in test directory
     const packageJson = {
       name: 'test-project',
-      version: '1.0.0'
+      version: '1.0.0',
     }
     fs.writeFileSync(path.join(testDir, 'package.json'), JSON.stringify(packageJson, null, 2))
-    
+
     // Run setup in the test directory
     try {
       execSync(`cd ${testDir} && node --loader tsx ${path.resolve(__dirname, '../setup-oxlint.ts')}`, {
         stdio: 'pipe',
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
     } catch (error) {
       // Expected to fail due to npm install, but should create .vscode directory
     }
-    
+
     // Check if .vscode/extensions.json was created
     const vscodeDir = path.join(testDir, '.vscode')
     const extensionsFile = path.join(vscodeDir, 'extensions.json')
-    
+
     if (fs.existsSync(extensionsFile)) {
       const extensions = JSON.parse(fs.readFileSync(extensionsFile, 'utf8'))
       expect(extensions).toHaveProperty('recommendations')
@@ -80,7 +80,7 @@ describe('VSCode extension auto-installation', () => {
     // Verify the setup function is now async by checking the code
     const setupScript = path.resolve(__dirname, '../setup-oxlint.ts')
     const scriptContent = fs.readFileSync(setupScript, 'utf8')
-    
+
     // Should contain async/await pattern
     expect(scriptContent).toContain('const setupVSCode = async')
     expect(scriptContent).toContain('await setupVSCode()')
