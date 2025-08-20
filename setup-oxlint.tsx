@@ -87,14 +87,18 @@ const getTemplateVSCodeConfig = () => {
 // React components for setup UI
 const WelcomeComponent: React.FC = () => (
   <Box flexDirection="column" marginBottom={1}>
-    <Text color="cyan" bold>🚀 Setting up oxlint with JavaScript Standard Style and Biome formatter...</Text>
+    <Text color="cyan" bold>
+      🚀 Setting up oxlint with JavaScript Standard Style and Biome formatter...
+    </Text>
     <Text color="gray">Creating a fast, comprehensive TypeScript/React linting setup</Text>
   </Box>
 )
 
 const StepHeader: React.FC<{ title: string; step: number; total: number }> = ({ title, step, total }) => (
   <Box marginBottom={1}>
-    <Text color="blue" bold>[{step}/{total}] </Text>
+    <Text color="blue" bold>
+      [{step}/{total}]{' '}
+    </Text>
     <Text>{title}</Text>
   </Box>
 )
@@ -118,7 +122,7 @@ const SuccessMessage: React.FC<{ message: string }> = ({ message }) => (
   </Box>
 )
 
-const ConfigCheckComponent: React.FC<{ 
+const ConfigCheckComponent: React.FC<{
   foundConfigs: string[]
   onRemove: () => void
   onSkip: () => void
@@ -130,16 +134,13 @@ const ConfigCheckComponent: React.FC<{
       <Text color="yellow">Found existing lint config files: {foundConfigs.join(', ')}</Text>
       <Box marginTop={1}>
         <Text>Remove them before continuing?</Text>
-        <ConfirmInput
-          onConfirm={onRemove}
-          onCancel={onSkip}
-        />
+        <ConfirmInput onConfirm={onRemove} onCancel={onSkip} />
       </Box>
     </Box>
   )
 }
 
-const PackageCheckComponent: React.FC<{ 
+const PackageCheckComponent: React.FC<{
   installedPackages: string[]
   onUninstall: () => void
   onSkip: () => void
@@ -151,16 +152,13 @@ const PackageCheckComponent: React.FC<{
       <Text color="yellow">Found installed ESLint/formatter packages: {installedPackages.join(', ')}</Text>
       <Box marginTop={1}>
         <Text>Uninstall them before continuing?</Text>
-        <ConfirmInput
-          onConfirm={onUninstall}
-          onCancel={onSkip}
-        />
+        <ConfirmInput onConfirm={onUninstall} onCancel={onSkip} />
       </Box>
     </Box>
   )
 }
 
-const VSCodeExtensionComponent: React.FC<{ 
+const VSCodeExtensionComponent: React.FC<{
   missingExtensions: string[]
   onInstall: () => void
   onSkip: () => void
@@ -171,14 +169,14 @@ const VSCodeExtensionComponent: React.FC<{
     <Box flexDirection="column" marginBottom={1}>
       <Text color="cyan">Detected {missingExtensions.length} missing recommended VSCode extension(s):</Text>
       {missingExtensions.map(ext => (
-        <Text key={ext} color="gray">  - {ext}</Text>
+        <Text key={ext} color="gray">
+          {' '}
+          - {ext}
+        </Text>
       ))}
       <Box marginTop={1}>
         <Text>Would you like to install the missing extensions automatically?</Text>
-        <ConfirmInput
-          onConfirm={onInstall}
-          onCancel={onSkip}
-        />
+        <ConfirmInput onConfirm={onInstall} onCancel={onSkip} />
       </Box>
     </Box>
   )
@@ -191,7 +189,7 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
     foundConfigs: [],
     installedPackages: [],
     isComplete: false,
-    error: null
+    error: null,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [loadingText, setLoadingText] = useState('')
@@ -199,7 +197,7 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
   useEffect(() => {
     // Check for existing configs and packages on mount
     const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
-    
+
     let installedPackages: string[] = []
     try {
       const pkgJson = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'))
@@ -211,14 +209,14 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
       ...prev,
       foundConfigs,
       installedPackages,
-      step: foundConfigs.length > 0 ? 'config-check' : installedPackages.length > 0 ? 'package-check' : 'install'
+      step: foundConfigs.length > 0 ? 'config-check' : installedPackages.length > 0 ? 'package-check' : 'install',
     }))
   }, [])
 
   const handleConfigRemoval = async () => {
     setIsLoading(true)
     setLoadingText('Removing config files...')
-    
+
     try {
       for (const f of state.foundConfigs) {
         fs.rmSync(path.resolve(process.cwd(), f))
@@ -226,7 +224,7 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
       setState(prev => ({
         ...prev,
         foundConfigs: [],
-        step: prev.installedPackages.length > 0 ? 'package-check' : 'install'
+        step: prev.installedPackages.length > 0 ? 'package-check' : 'install',
       }))
     } catch (error) {
       setState(prev => ({ ...prev, error: 'Failed to remove config files' }))
@@ -238,13 +236,13 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
   const handlePackageUninstall = async () => {
     setIsLoading(true)
     setLoadingText('Uninstalling packages...')
-    
+
     try {
       execSync(`npm uninstall ${state.installedPackages.join(' ')}`, { stdio: 'pipe' })
       setState(prev => ({
         ...prev,
         installedPackages: [],
-        step: 'install'
+        step: 'install',
       }))
     } catch (error) {
       setState(prev => ({ ...prev, error: 'Failed to uninstall packages' }))
@@ -256,16 +254,16 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
   const handleInstallation = async () => {
     setIsLoading(true)
     setState(prev => ({ ...prev, step: 'install' }))
-    
+
     try {
       // Install ox-standard
       setLoadingText('Installing ox-standard...')
       execSync('npm install --save-dev github:JohnDeved/ox-standard', { stdio: 'pipe' })
-      
+
       // Create configs
       setLoadingText('Creating configuration files...')
       setState(prev => ({ ...prev, step: 'config-create' }))
-      
+
       // Create .oxlintrc.json
       const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
       if (!fs.existsSync(oxlintrcPath)) {
@@ -297,7 +295,6 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
 
       setState(prev => ({ ...prev, step: 'vscode-setup' }))
       await setupVSCodeFlow()
-      
     } catch (error) {
       setState(prev => ({ ...prev, error: 'Installation failed' }))
     } finally {
@@ -307,7 +304,7 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
 
   const setupVSCodeFlow = async () => {
     setLoadingText('Setting up VSCode integration...')
-    
+
     const vscodeDir = path.resolve(process.cwd(), '.vscode')
     if (!fs.existsSync(vscodeDir)) {
       fs.mkdirSync(vscodeDir)
@@ -342,9 +339,9 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
     }
 
     fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
-    
+
     setState(prev => ({ ...prev, step: 'complete', isComplete: true }))
-    
+
     // Auto-exit after showing completion message
     setTimeout(() => {
       onComplete?.()
@@ -353,9 +350,9 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
 
   const handleSkip = () => {
     if (state.step === 'config-check') {
-      setState(prev => ({ 
-        ...prev, 
-        step: prev.installedPackages.length > 0 ? 'package-check' : 'install' 
+      setState(prev => ({
+        ...prev,
+        step: prev.installedPackages.length > 0 ? 'package-check' : 'install',
       }))
     } else if (state.step === 'package-check') {
       setState(prev => ({ ...prev, step: 'install' }))
@@ -372,34 +369,32 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
   return (
     <Box flexDirection="column">
       <WelcomeComponent />
-      
+
       {isLoading && <LoadingSpinner text={loadingText} />}
-      
+
       {state.step === 'config-check' && (
         <>
           <StepHeader title="Configuration Check" step={1} total={6} />
           <ConfigCheckComponent
             foundConfigs={state.foundConfigs}
             onRemove={handleConfigRemoval}
-            onSkip={() => setState(prev => ({ 
-              ...prev, 
-              step: prev.installedPackages.length > 0 ? 'package-check' : 'install' 
-            }))}
+            onSkip={() =>
+              setState(prev => ({
+                ...prev,
+                step: prev.installedPackages.length > 0 ? 'package-check' : 'install',
+              }))
+            }
           />
         </>
       )}
-      
+
       {state.step === 'package-check' && (
         <>
           <StepHeader title="Package Check" step={2} total={6} />
-          <PackageCheckComponent
-            installedPackages={state.installedPackages}
-            onUninstall={handlePackageUninstall}
-            onSkip={() => setState(prev => ({ ...prev, step: 'install' }))}
-          />
+          <PackageCheckComponent installedPackages={state.installedPackages} onUninstall={handlePackageUninstall} onSkip={() => setState(prev => ({ ...prev, step: 'install' }))} />
         </>
       )}
-      
+
       {state.step === 'install' && !isLoading && (
         <>
           <StepHeader title="Installation" step={3} total={6} />
@@ -407,21 +402,20 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
             <Text>Ready to install ox-standard and configure your project.</Text>
           </Box>
           <Text>Continue with installation?</Text>
-          <ConfirmInput
-            onConfirm={handleInstallation}
-            onCancel={() => process.exit(0)}
-          />
+          <ConfirmInput onConfirm={handleInstallation} onCancel={() => process.exit(0)} />
         </>
       )}
-      
+
       {state.step === 'complete' && (
         <Box flexDirection="column">
           <SuccessMessage message="Setup complete!" />
           <Box flexDirection="column" marginTop={1}>
-            <Text color="cyan" bold>📋 Next steps:</Text>
-            <Text>  npm run lint       - Lint and format code automatically</Text>
-            <Text>  npx oxlint --help  - View all oxlint options</Text>
-            <Text>  npx biome --help   - View all biome options</Text>
+            <Text color="cyan" bold>
+              📋 Next steps:
+            </Text>
+            <Text> npm run lint - Lint and format code automatically</Text>
+            <Text> npx oxlint --help - View all oxlint options</Text>
+            <Text> npx biome --help - View all biome options</Text>
             <Text></Text>
             <Text color="gray">📖 Customize rules in .oxlintrc.json and biome.json if needed</Text>
             <Text color="gray">🔧 JavaScript Standard Style is enforced for both linting and formatting</Text>
@@ -435,13 +429,13 @@ const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) =
 // App component that handles exit
 const App: React.FC = () => {
   const [shouldExit, setShouldExit] = useState(false)
-  
+
   useEffect(() => {
     if (shouldExit) {
       process.exit(0)
     }
   }, [shouldExit])
-  
+
   return <SetupComponent onComplete={() => setShouldExit(true)} />
 }
 
