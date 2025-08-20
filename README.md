@@ -2,7 +2,7 @@
 
 **Lightning-fast JavaScript Standard Style linting and formatting** ⚡
 
-Drop-in replacement for ESLint/Prettier that's 10x faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and Biome formatter for TypeScript/React projects.
+Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and Biome formatter for TypeScript/React projects.
 
 <div align="center">
   <a href="https://standardjs.com/">
