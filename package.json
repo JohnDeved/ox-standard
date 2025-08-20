@@ -1,17 +1,18 @@
 {
   "name": "ox-standard",
   "version": "0.1.31",
+  "type": "module",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "author": "Johann Berger <johann@objekt.stream>",
   "files": [
     ".oxlintrc.json",
     "biome.json",
-    "setup-oxlint.ts",
+    "setup-oxlint.tsx",
     ".vscode"
   ],
   "bin": {
-    "ox-standard": "./setup-oxlint.ts",
-    "setup-oxlint": "./setup-oxlint.ts"
+    "ox-standard": "./setup-oxlint.tsx",
+    "setup-oxlint": "./setup-oxlint.tsx"
   },
   "scripts": {
     "test:lint": "vitest run lint-test/all-lint-rules.test.ts",
@@ -22,11 +23,15 @@
     "fix": "npm run lint; npm run format"
   },
   "dependencies": {
+    "@inkjs/ui": "^2.0.0",
+    "ink": "^6.2.1",
     "oxlint": "^1.12.0",
+    "react": "^19.1.1",
     "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
+    "@types/react": "^19.1.10",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
