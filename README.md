@@ -27,7 +27,7 @@ That's it! The setup automatically:
 
 ## ✨ What You Get
 
-### 🚀 10x Faster Performance
+### 🚀 100x Faster Performance
 - **Rust-based oxlint**: Sub-second linting even on large codebases
 - **Biome formatter**: Lightning-fast formatting
 - **Single command**: `npm run lint` handles both linting and formatting
