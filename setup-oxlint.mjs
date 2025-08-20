@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-const React = require('react');
-const { render, Box, Text } = require('ink');
-const { ConfirmInput, Spinner } = require('@inkjs/ui');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import React from 'react';
+import { render, Box, Text } from 'ink';
+import { ConfirmInput, Spinner } from '@inkjs/ui';
 
 const LINT_CONFIG_FILES = ['.oxlintrc.json', 'oxlint.json', '.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml', 'eslint.config.js', 'eslint.json', 'biome.json', 'biome.jsonc', '.biome.json', '.biome.jsonc'];
 
@@ -60,7 +60,7 @@ const installVSCodeExtensions = async (extensions) => {
 
 const getTemplateVSCodeConfig = () => {
   // Read template files from this package's .vscode directory
-  const packageRoot = path.dirname(__filename);
+  const packageRoot = path.dirname(new URL(import.meta.url).pathname);
   const templateVSCodeDir = path.resolve(packageRoot, '.vscode');
 
   // Read template extensions.json

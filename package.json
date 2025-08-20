@@ -8,12 +8,12 @@
     ".oxlintrc.json",
     "biome.json",
     "setup-oxlint.tsx",
-    "setup-oxlint.cjs",
+    "setup-oxlint.mjs",
     ".vscode"
   ],
   "bin": {
-    "ox-standard": "./setup-oxlint.cjs",
-    "setup-oxlint": "./setup-oxlint.cjs"
+    "ox-standard": "./setup-oxlint.mjs",
+    "setup-oxlint": "./setup-oxlint.mjs"
   },
   "scripts": {
     "test:lint": "vitest run lint-test/all-lint-rules.test.ts",
