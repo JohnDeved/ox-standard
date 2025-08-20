@@ -1,7 +1,7 @@
 {
   "recommendations": [
-    "ms-vscode.vscode-typescript-next",
     "biomejs.biome",
-    "oxc.oxc-vscode"
+    "oxc.oxc-vscode",
+    "typescriptteam.native-preview"
   ]
 }
