@@ -39,6 +39,37 @@ const prompt = (question: string): Promise<boolean> => {
   })
 }
 
+const isVSCodeCliAvailable = (): boolean => {
+  try {
+    execSync('code --version', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const getInstalledVSCodeExtensions = (): string[] => {
+  try {
+    const output = execSync('code --list-extensions', { encoding: 'utf8' })
+    return output.trim().split('\n').filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
+const installVSCodeExtensions = async (extensions: string[]): Promise<void> => {
+  console.log('Installing VSCode extensions...')
+  for (const extension of extensions) {
+    try {
+      console.log(`  Installing ${extension}...`)
+      execSync(`code --install-extension ${extension}`, { stdio: 'inherit' })
+      console.log(`  ✓ Installed ${extension}`)
+    } catch {
+      console.log(`  ⚠️  Failed to install ${extension}`)
+    }
+  }
+}
+
 const getTemplateVSCodeConfig = () => {
   // Read template files from this package's .vscode directory
   const packageRoot = path.dirname(__filename)
@@ -55,7 +86,7 @@ const getTemplateVSCodeConfig = () => {
   return { templateExtensions, templateSettings }
 }
 
-const setupVSCode = () => {
+const setupVSCode = async (): Promise<void> => {
   const vscodeDir = path.resolve(process.cwd(), '.vscode')
   if (!fs.existsSync(vscodeDir)) {
     fs.mkdirSync(vscodeDir)
@@ -67,6 +98,29 @@ const setupVSCode = () => {
   const extensionsPath = path.resolve(vscodeDir, 'extensions.json')
   fs.writeFileSync(extensionsPath, JSON.stringify(templateExtensions, undefined, 2))
   console.log('✓ Created .vscode/extensions.json with recommended extensions')
+
+  // Check if VSCode CLI is available and offer to install extensions
+  if (isVSCodeCliAvailable()) {
+    const recommendedExtensions = templateExtensions.recommendations || []
+    const installedExtensions = getInstalledVSCodeExtensions()
+    const missingExtensions = recommendedExtensions.filter((ext: string) => !installedExtensions.includes(ext))
+
+    if (missingExtensions.length > 0) {
+      console.log(`\nDetected ${missingExtensions.length} missing recommended VSCode extension(s):`)
+      missingExtensions.forEach((ext: string) => console.log(`  - ${ext}`))
+      
+      const shouldInstall = await prompt('\nWould you like to install the missing extensions automatically?')
+      if (shouldInstall) {
+        await installVSCodeExtensions(missingExtensions)
+      } else {
+        console.log('Skipping extension installation. You can install them manually later.')
+      }
+    } else {
+      console.log('✓ All recommended VSCode extensions are already installed')
+    }
+  } else {
+    console.log('⚠️  VSCode CLI not detected. Extensions will need to be installed manually.')
+  }
 
   // Setup VSCode settings
   const settingsPath = path.resolve(vscodeDir, 'settings.json')
@@ -201,7 +255,7 @@ const main = async (): Promise<void> => {
   }
 
   // 7. Setup VSCode integration
-  setupVSCode()
+  await setupVSCode()
 
   console.log('\n✅ Setup complete!')
   console.log('\n📋 Next steps:')
