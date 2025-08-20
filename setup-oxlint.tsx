@@ -101,9 +101,7 @@ const StepHeader: React.FC<{ title: string; step: number; total: number }> = ({ 
 
 const LoadingSpinner: React.FC<{ text: string }> = ({ text }) => (
   <Box>
-    <Text color="yellow">
-      <Spinner />
-    </Text>
+    <Spinner type="dots" />
     <Text> {text}</Text>
   </Box>
 )
@@ -131,9 +129,10 @@ const ConfigCheckComponent: React.FC<{
     <Box flexDirection="column" marginBottom={1}>
       <Text color="yellow">Found existing lint config files: {foundConfigs.join(', ')}</Text>
       <Box marginTop={1}>
+        <Text>Remove them before continuing?</Text>
         <ConfirmInput
-          placeholder="Remove them before continuing?"
-          onConfirm={(confirmed) => confirmed ? onRemove() : onSkip()}
+          onConfirm={onRemove}
+          onCancel={onSkip}
         />
       </Box>
     </Box>
@@ -151,9 +150,10 @@ const PackageCheckComponent: React.FC<{
     <Box flexDirection="column" marginBottom={1}>
       <Text color="yellow">Found installed ESLint/formatter packages: {installedPackages.join(', ')}</Text>
       <Box marginTop={1}>
+        <Text>Uninstall them before continuing?</Text>
         <ConfirmInput
-          placeholder="Uninstall them before continuing?"
-          onConfirm={(confirmed) => confirmed ? onUninstall() : onSkip()}
+          onConfirm={onUninstall}
+          onCancel={onSkip}
         />
       </Box>
     </Box>
@@ -174,9 +174,10 @@ const VSCodeExtensionComponent: React.FC<{
         <Text key={ext} color="gray">  - {ext}</Text>
       ))}
       <Box marginTop={1}>
+        <Text>Would you like to install the missing extensions automatically?</Text>
         <ConfirmInput
-          placeholder="Would you like to install the missing extensions automatically?"
-          onConfirm={(confirmed) => confirmed ? onInstall() : onSkip()}
+          onConfirm={onInstall}
+          onCancel={onSkip}
         />
       </Box>
     </Box>
@@ -184,7 +185,7 @@ const VSCodeExtensionComponent: React.FC<{
 }
 
 // Main setup component
-const SetupComponent: React.FC = () => {
+const SetupComponent: React.FC<{ onComplete?: () => void }> = ({ onComplete }) => {
   const [state, setState] = useState<SetupState>({
     step: 'welcome',
     foundConfigs: [],
@@ -343,11 +344,25 @@ const SetupComponent: React.FC = () => {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
     
     setState(prev => ({ ...prev, step: 'complete', isComplete: true }))
+    
+    // Auto-exit after showing completion message
+    setTimeout(() => {
+      onComplete?.()
+    }, 3000)
   }
 
   const handleSkip = () => {
-    setState(prev => ({ ...prev, error: 'Setup aborted. Please resolve conflicts manually.' }))
-    process.exit(1)
+    if (state.step === 'config-check') {
+      setState(prev => ({ 
+        ...prev, 
+        step: prev.installedPackages.length > 0 ? 'package-check' : 'install' 
+      }))
+    } else if (state.step === 'package-check') {
+      setState(prev => ({ ...prev, step: 'install' }))
+    } else {
+      setState(prev => ({ ...prev, error: 'Setup aborted. Please resolve conflicts manually.' }))
+      process.exit(1)
+    }
   }
 
   if (state.error) {
@@ -366,7 +381,10 @@ const SetupComponent: React.FC = () => {
           <ConfigCheckComponent
             foundConfigs={state.foundConfigs}
             onRemove={handleConfigRemoval}
-            onSkip={handleSkip}
+            onSkip={() => setState(prev => ({ 
+              ...prev, 
+              step: prev.installedPackages.length > 0 ? 'package-check' : 'install' 
+            }))}
           />
         </>
       )}
@@ -377,7 +395,7 @@ const SetupComponent: React.FC = () => {
           <PackageCheckComponent
             installedPackages={state.installedPackages}
             onUninstall={handlePackageUninstall}
-            onSkip={handleSkip}
+            onSkip={() => setState(prev => ({ ...prev, step: 'install' }))}
           />
         </>
       )}
@@ -388,9 +406,10 @@ const SetupComponent: React.FC = () => {
           <Box marginBottom={1}>
             <Text>Ready to install ox-standard and configure your project.</Text>
           </Box>
+          <Text>Continue with installation?</Text>
           <ConfirmInput
-            placeholder="Continue with installation?"
-            onConfirm={(confirmed) => confirmed ? handleInstallation() : process.exit(0)}
+            onConfirm={handleInstallation}
+            onCancel={() => process.exit(0)}
           />
         </>
       )}
@@ -415,7 +434,15 @@ const SetupComponent: React.FC = () => {
 
 // App component that handles exit
 const App: React.FC = () => {
-  return <SetupComponent />
+  const [shouldExit, setShouldExit] = useState(false)
+  
+  useEffect(() => {
+    if (shouldExit) {
+      process.exit(0)
+    }
+  }, [shouldExit])
+  
+  return <SetupComponent onComplete={() => setShouldExit(true)} />
 }
 
 // Main function to start the Ink app
