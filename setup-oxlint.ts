@@ -108,7 +108,7 @@ const setupVSCode = async (): Promise<void> => {
     if (missingExtensions.length > 0) {
       console.log(`\nDetected ${missingExtensions.length} missing recommended VSCode extension(s):`)
       missingExtensions.forEach((ext: string) => console.log(`  - ${ext}`))
-      
+
       const shouldInstall = await prompt('\nWould you like to install the missing extensions automatically?')
       if (shouldInstall) {
         await installVSCodeExtensions(missingExtensions)
