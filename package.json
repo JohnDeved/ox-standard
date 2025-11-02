@@ -5,7 +5,7 @@
   "author": "Johann Berger <johann@objekt.stream>",
   "files": [
     ".oxlintrc.json",
-    "biome.json",
+    ".oxfmtrc.json",
     "setup-oxlint.ts",
     ".vscode"
   ],
@@ -15,22 +15,23 @@
   },
   "scripts": {
     "test:lint": "vitest run lint-test/all-lint-rules.test.ts",
-    "format": "npx @biomejs/biome format --write .",
-    "format:check": "npx @biomejs/biome format .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "test:format": "vitest run lint-test/format.test.ts",
-    "lint": "oxlint --fix .; biome format --write .",
+    "lint": "oxlint --fix .; oxfmt .",
     "fix": "npm run lint; npm run format"
   },
   "dependencies": {
-    "oxlint": "^1.13.0",
-    "tsx": "^4.20.5"
+    "oxfmt": "^0.9.0",
+    "oxlint": "^1.25.0",
+    "tsx": "^4.20.6"
   },
   "devDependencies": {
-    "@types/node": "^24.3.0",
-    "vitest": "^3.2.4"
+    "@types/node": "^24.9.2",
+    "vitest": "^4.0.6"
   },
   "peerDependencies": {
-    "@biomejs/biome": "^2.2.2",
-    "oxlint": "^1.13.0"
+    "oxfmt": "^0.9.0",
+    "oxlint": "^1.25.0"
   }
 }

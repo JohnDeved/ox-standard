@@ -4,7 +4,18 @@ import path from 'path'
 import readline from 'readline'
 import { execSync } from 'child_process'
 
-const LINT_CONFIG_FILES = ['.oxlintrc.json', 'oxlint.json', '.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.yaml', '.eslintrc.yml', 'eslint.config.js', 'eslint.json', 'biome.json', 'biome.jsonc', '.biome.json', '.biome.jsonc']
+const LINT_CONFIG_FILES = [
+  '.oxlintrc.json',
+  'oxlint.json',
+  '.eslintrc',
+  '.eslintrc.json',
+  '.eslintrc.js',
+  '.eslintrc.cjs',
+  '.eslintrc.yaml',
+  '.eslintrc.yml',
+  'eslint.config.js',
+  'eslint.json',
+]
 
 // List of ESLint-related packages to check/uninstall
 const ESLINT_PACKAGES = [
@@ -24,7 +35,12 @@ const ESLINT_PACKAGES = [
 ]
 
 // List of formatter packages to check/uninstall
-const FORMATTER_PACKAGES = ['prettier', '@prettier/plugin-tailwindcss', 'prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss']
+const FORMATTER_PACKAGES = [
+  'prettier',
+  '@prettier/plugin-tailwindcss',
+  'prettier-plugin-organize-imports',
+  'prettier-plugin-tailwindcss',
+]
 
 const prompt = (question: string): Promise<boolean> => {
   const rl = readline.createInterface({
@@ -103,13 +119,17 @@ const setupVSCode = async (): Promise<void> => {
   if (isVSCodeCliAvailable()) {
     const recommendedExtensions = templateExtensions.recommendations || []
     const installedExtensions = getInstalledVSCodeExtensions()
-    const missingExtensions = recommendedExtensions.filter((ext: string) => !installedExtensions.includes(ext))
+    const missingExtensions = recommendedExtensions.filter(
+      (ext: string) => !installedExtensions.includes(ext)
+    )
 
     if (missingExtensions.length > 0) {
       console.log(`\nDetected ${missingExtensions.length} missing recommended VSCode extension(s):`)
       missingExtensions.forEach((ext: string) => console.log(`  - ${ext}`))
 
-      const shouldInstall = await prompt('\nWould you like to install the missing extensions automatically?')
+      const shouldInstall = await prompt(
+        '\nWould you like to install the missing extensions automatically?'
+      )
       if (shouldInstall) {
         await installVSCodeExtensions(missingExtensions)
       } else {
@@ -149,7 +169,7 @@ const setupVSCode = async (): Promise<void> => {
 }
 
 const main = async (): Promise<void> => {
-  console.log('🚀 Setting up oxlint with JavaScript Standard Style and Biome formatter...\n')
+  console.log('🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
 
   // 1. Check for existing linting config files
   const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
@@ -222,17 +242,21 @@ const main = async (): Promise<void> => {
     console.log('⚠️  .oxlintrc.json already exists, skipping creation.')
   }
 
-  // 5. Create biome.json configuration file
-  const biomePath = path.resolve(process.cwd(), 'biome.json')
-  if (!fs.existsSync(biomePath)) {
-    const biomeConfig = {
-      extends: ['./node_modules/ox-standard/biome.json'],
-      // Users can override settings here
+  // 5. Create .oxfmtrc.json configuration file
+  const oxfmtPath = path.resolve(process.cwd(), '.oxfmtrc.json')
+  if (!fs.existsSync(oxfmtPath)) {
+    const oxfmtConfig = {
+      singleQuote: true,
+      semi: false,
+      printWidth: 100,
+      tabWidth: 2,
+      trailingComma: 'es5',
+      arrowParens: 'avoid',
     }
-    fs.writeFileSync(biomePath, JSON.stringify(biomeConfig, undefined, 2))
-    console.log('✓ Created biome.json extending ox-standard config')
+    fs.writeFileSync(oxfmtPath, JSON.stringify(oxfmtConfig, undefined, 2))
+    console.log('✓ Created .oxfmtrc.json with JavaScript Standard Style config')
   } else {
-    console.log('⚠️  biome.json already exists, skipping creation.')
+    console.log('⚠️  .oxfmtrc.json already exists, skipping creation.')
   }
 
   // 6. Update package.json with lint and format scripts
@@ -245,7 +269,7 @@ const main = async (): Promise<void> => {
       }
 
       // Add/update lint script that does both linting with fixes and formatting
-      packageJson.scripts.lint = 'oxlint --fix .; biome format --write .'
+      packageJson.scripts.lint = 'oxlint --fix .; oxfmt .'
 
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
       console.log('✓ Added lint script to package.json')
@@ -261,8 +285,8 @@ const main = async (): Promise<void> => {
   console.log('\n📋 Next steps:')
   console.log('  npm run lint       - Lint and format code automatically')
   console.log('  npx oxlint --help  - View all oxlint options')
-  console.log('  npx biome --help   - View all biome options')
-  console.log('\n📖 Customize rules in .oxlintrc.json and biome.json if needed')
+  console.log('  npx oxfmt --help   - View all oxfmt options')
+  console.log('\n📖 Customize rules in .oxlintrc.json and .oxfmtrc.json if needed')
   console.log('🔧 JavaScript Standard Style is enforced for both linting and formatting')
 }
 
