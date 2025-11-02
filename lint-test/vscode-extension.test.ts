@@ -87,4 +87,23 @@ describe('VSCode extension auto-installation', () => {
     expect(scriptContent).toContain('const setupVSCode = async')
     expect(scriptContent).toContain('await setupVSCode()')
   })
+
+  it('should configure VSCode settings with oxfmt formatter support', () => {
+    // Check that the template settings include oxfmt configuration
+    const vscodeDir = path.resolve(__dirname, '..', '.vscode')
+    const settingsFile = path.join(vscodeDir, 'settings.json')
+
+    expect(fs.existsSync(settingsFile)).toBe(true)
+
+    const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'))
+
+    // Verify oxfmt formatting is enabled
+    expect(settings['editor.defaultFormatter']).toBe('oxc.oxc-vscode')
+    expect(settings['oxc.fmt.experimental']).toBe(true)
+    expect(settings['editor.formatOnSave']).toBe(true)
+
+    // Verify other standard settings
+    expect(settings['editor.tabSize']).toBe(2)
+    expect(settings['editor.codeActionsOnSave']).toHaveProperty('source.fixAll.oxc')
+  })
 })
