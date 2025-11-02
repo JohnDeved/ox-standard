@@ -67,6 +67,15 @@ Need to override rules? Easy:
 }
 ```
 
+## 💡 VSCode Integration
+
+The setup automatically configures VSCode for the best experience:
+- **Auto-formatting on save** with oxfmt via the oxc-vscode extension
+- **Auto-fixing** linting issues on save
+- **Recommended extensions** installation prompt
+
+The `.vscode/settings.json` is configured to use oxc-vscode as the default formatter with experimental oxfmt support enabled. Just install the recommended `oxc.oxc-vscode` extension when prompted, and formatting will work out of the box!
+
 ## 🆚 Migrating from ESLint/Prettier?
 
 The setup script handles everything automatically:
