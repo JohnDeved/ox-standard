@@ -7,20 +7,15 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-interface BiomeConfig {
-  javascript?: {
-    formatter?: {
-      quoteStyle?: string
-      semicolons?: string
-    }
-  }
-  formatter?: {
-    indentWidth?: number
-    indentStyle?: string
-  }
+interface OxfmtConfig {
+  singleQuote?: boolean
+  semi?: boolean
+  printWidth?: number
+  tabWidth?: number
+  trailingComma?: string
 }
 
-describe('Biome formatting with JavaScript Standard Style', () => {
+describe('oxfmt formatting with JavaScript Standard Style', () => {
   let testFiles: string[] = []
 
   const createTestFile = (filename: string, content: string): string => {
@@ -40,15 +35,16 @@ describe('Biome formatting with JavaScript Standard Style', () => {
     testFiles = []
   })
 
-  const runBiomeFormatWrite = (files: string[]): void => {
+  const runOxfmtFormatWrite = (files: string[]): void => {
     try {
-      const command = `npx biome format --write --config-path ${path.resolve(__dirname, '../biome.json')} ${files.join(' ')}`
+      const command = `cd ${path.resolve(__dirname, '..')} && npx oxfmt ${files.join(' ')}`
       execSync(command, {
         cwd: path.resolve(__dirname, '..'),
         encoding: 'utf8',
+        shell: '/bin/bash',
       })
     } catch (error: unknown) {
-      // biome format --write may exit with non-zero, that's expected
+      // oxfmt may exit with non-zero, that's expected
       if (error && typeof error === 'object' && 'stdout' in error && 'stderr' in error) {
         const execError = error as { stdout?: string; stderr?: string }
         if (!execError.stdout && !execError.stderr) {
@@ -67,7 +63,7 @@ function test() {
 export default test;`
 
     const testFile = createTestFile('test-semicolons.js', code)
-    runBiomeFormatWrite([testFile])
+    runOxfmtFormatWrite([testFile])
     const formatted = fs.readFileSync(testFile, 'utf8')
 
     // Should remove semicolons and convert to single quotes
@@ -85,7 +81,7 @@ const template = "This is a \\"quoted\\" string"
 const obj = { "key": "value" }`
 
     const testFile = createTestFile('test-quotes.js', code)
-    runBiomeFormatWrite([testFile])
+    runOxfmtFormatWrite([testFile])
     const formatted = fs.readFileSync(testFile, 'utf8')
 
     expect(formatted).toMatch(/const message = 'Hello World'/)
@@ -109,7 +105,7 @@ const obj = { "key": "value" }`
 }`
 
     const testFile = createTestFile('test-indentation.js', code)
-    runBiomeFormatWrite([testFile])
+    runOxfmtFormatWrite([testFile])
     const formatted = fs.readFileSync(testFile, 'utf8')
 
     // Check for 2-space indentation
@@ -136,27 +132,27 @@ const fn3 = (x, y) => {
 };`
 
     const testFile = createTestFile('test-arrows.js', code)
-    runBiomeFormatWrite([testFile])
+    runOxfmtFormatWrite([testFile])
     const formatted = fs.readFileSync(testFile, 'utf8')
 
-    // Should use parentheses only when needed (biome may differ from standard on this)
+    // Should use parentheses only when needed (oxfmt may differ from standard on this)
     expect(formatted).toMatch(/const fn1 = .* => .* \* 2/)
     expect(formatted).toMatch(/const fn2 = .* => .* \* 2/)
     expect(formatted).toMatch(/const fn3 = \(.*, .*\) => \{/)
     expect(formatted).toMatch(/return .* \+ .*/)
   })
 
-  it('should check if biome configuration is valid', () => {
-    const configPath = path.resolve(__dirname, '../biome.json')
+  it('should check if oxfmt configuration is valid', () => {
+    const configPath = path.resolve(__dirname, '../.oxfmtrc.json')
     expect(fs.existsSync(configPath)).toBe(true)
 
-    const config: BiomeConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    const config: OxfmtConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
     // Verify key formatting settings
-    expect(config.javascript?.formatter?.quoteStyle).toBe('single')
-    expect(config.javascript?.formatter?.semicolons).toBe('asNeeded')
-    expect(config.formatter?.indentWidth).toBe(2)
-    expect(config.formatter?.indentStyle).toBe('space')
+    expect(config.singleQuote).toBe(true)
+    expect(config.semi).toBe(false)
+    expect(config.tabWidth).toBe(2)
+    expect(config.printWidth).toBe(100)
   })
 
   it('can format a complex example with all rules', () => {
@@ -169,7 +165,7 @@ function testFunction( x,y ) {
 export { testFunction,message };`
 
     const testFile = createTestFile('test-complex.js', code)
-    runBiomeFormatWrite([testFile])
+    runOxfmtFormatWrite([testFile])
     const formatted = fs.readFileSync(testFile, 'utf8')
 
     // Should use single quotes

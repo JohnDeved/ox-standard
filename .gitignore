@@ -107,4 +107,3 @@ dist
 lint-test/test-*.js
 lint-test/test-*.ts
 lint-test/test-*.tsx
-lint-test/.oxfmtrc.json

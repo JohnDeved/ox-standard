@@ -2,7 +2,7 @@
 
 **Lightning-fast JavaScript Standard Style linting and formatting** ⚡
 
-Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and Biome formatter for TypeScript/React projects.
+Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and oxfmt formatter for TypeScript/React projects.
 
 <div align="center">
   <a href="https://standardjs.com/">
@@ -21,7 +21,7 @@ npx JohnDeved/ox-standard
 That's it! The setup automatically:
 - ✅ Removes ESLint and Prettier packages and configs 
 - ✅ Installs oxlint with Standard Style configuration
-- ✅ Installs Biome formatter with Standard Style configuration
+- ✅ Installs oxfmt formatter with Standard Style configuration
 - ✅ Updates your package.json scripts
 - ✅ Configures VSCode settings and extensions
 
@@ -29,7 +29,7 @@ That's it! The setup automatically:
 
 ### 🚀 100x Faster Performance
 - **Rust-based oxlint**: Sub-second linting even on large codebases
-- **Biome formatter**: Lightning-fast formatting
+- **oxfmt formatter**: Lightning-fast formatting from the oxc ecosystem
 - **Single command**: `npm run lint` handles both linting and formatting
 
 ### 📏 JavaScript Standard Style Enforced
@@ -57,14 +57,13 @@ Need to override rules? Easy:
 ```
 
 ```jsonc
-// biome.json  
+// .oxfmtrc.json  
 {
-  "extends": ["./node_modules/ox-standard/biome.json"],
-  "javascript": {
-    "formatter": {
-      "lineWidth": 100
-    }
-  }
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 120,
+  "tabWidth": 2,
+  "trailingComma": "es5"
 }
 ```
 
@@ -85,9 +84,9 @@ Prefer manual setup?
 npm install --save-dev github:JohnDeved/ox-standard
 
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
-echo '{"extends": ["./node_modules/ox-standard/biome.json"]}' > biome.json
+cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json
 
-npm pkg set scripts.lint="oxlint --fix .; biome format --write ."
+npm pkg set scripts.lint="oxlint --fix .; oxfmt ."
 ```
 
 ## 🔧 Complete Rule Reference

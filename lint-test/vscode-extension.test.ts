@@ -55,10 +55,13 @@ describe('VSCode extension auto-installation', () => {
 
     // Run setup in the test directory
     try {
-      execSync(`cd ${testDir} && node --loader tsx ${path.resolve(__dirname, '../setup-oxlint.ts')}`, {
-        stdio: 'pipe',
-        encoding: 'utf8',
-      })
+      execSync(
+        `cd ${testDir} && node --loader tsx ${path.resolve(__dirname, '../setup-oxlint.ts')}`,
+        {
+          stdio: 'pipe',
+          encoding: 'utf8',
+        }
+      )
     } catch {
       // Expected to fail due to npm install, but should create .vscode directory
     }
@@ -70,7 +73,6 @@ describe('VSCode extension auto-installation', () => {
     if (fs.existsSync(extensionsFile)) {
       const extensions = JSON.parse(fs.readFileSync(extensionsFile, 'utf8'))
       expect(extensions).toHaveProperty('recommendations')
-      expect(extensions.recommendations).toContain('biomejs.biome')
       expect(extensions.recommendations).toContain('oxc.oxc-vscode')
       expect(extensions.recommendations).toContain('ms-vscode.vscode-typescript-next')
     }
