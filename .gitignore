@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Test files generated during tests
+lint-test/test-*.js
+lint-test/test-*.ts
+lint-test/test-*.tsx
+lint-test/.oxfmtrc.json
