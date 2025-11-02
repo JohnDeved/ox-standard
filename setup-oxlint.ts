@@ -15,7 +15,6 @@ const LINT_CONFIG_FILES = [
   '.eslintrc.yml',
   'eslint.config.js',
   'eslint.json',
-  '.oxfmtrc.json',
 ]
 
 // List of ESLint-related packages to check/uninstall
