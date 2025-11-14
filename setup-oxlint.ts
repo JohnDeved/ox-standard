@@ -368,32 +368,12 @@ const main = async (): Promise<void> => {
     }
   } else {
     // Deno specific setup
-    console.log('ℹ️  Deno project detected.')
-
     if (!isDenoAvailable()) {
       console.error('❌ Deno is not available. Please install Deno first: https://deno.land/')
       process.exit(1)
     }
 
-    console.log('✓ Deno runtime detected')
-
-    // Install oxlint and oxfmt using Deno's npm support
-    console.log('Installing oxlint and oxfmt via npm:...')
-    try {
-      execSync('deno install npm:oxlint@1.25.0', { stdio: 'inherit' })
-      console.log('✓ Installed oxlint')
-    } catch {
-      console.error('❌ Failed to install oxlint')
-      process.exit(1)
-    }
-
-    try {
-      execSync('deno install npm:oxfmt@0.9.0', { stdio: 'inherit' })
-      console.log('✓ Installed oxfmt')
-    } catch {
-      console.error('❌ Failed to install oxfmt')
-      process.exit(1)
-    }
+    console.log('✓ Deno project detected - will use npx for oxlint and oxfmt')
   }
 
   // 4. Create minimal .oxlintrc.json that extends from the package
@@ -487,7 +467,7 @@ const main = async (): Promise<void> => {
       if (!denoConfig.tasks) {
         denoConfig.tasks = {}
       }
-      ;(denoConfig.tasks as Record<string, string>).lint = 'oxlint --fix . && oxfmt .'
+      ;(denoConfig.tasks as Record<string, string>).lint = 'npx oxlint --fix . && npx oxfmt .'
 
       // Write back
       fs.writeFileSync(configPath, JSON.stringify(denoConfig, null, 2))
