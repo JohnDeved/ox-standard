@@ -4,7 +4,7 @@ import path from 'path'
 import readline from 'readline'
 import { execSync } from 'child_process'
 
-type ProjectType = 'node' | 'deno'
+type ProjectType = 'node' | 'deno' | 'bun'
 
 const LINT_CONFIG_FILES = [
   '.oxlintrc.json',
@@ -57,10 +57,33 @@ const prompt = (question: string): Promise<boolean> => {
   })
 }
 
-const detectProjectType = (): ProjectType => {
-  // If package.json exists, always assume Node.js
+const promptChoice = (question: string, choices: string[]): Promise<string> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+  return new Promise(resolve => {
+    console.log(question)
+    choices.forEach((choice, index) => {
+      console.log(`  ${index + 1}. ${choice}`)
+    })
+    rl.question(`Enter your choice (1-${choices.length}): `, answer => {
+      rl.close()
+      const choice = parseInt(answer.trim())
+      if (choice >= 1 && choice <= choices.length) {
+        resolve(choices[choice - 1].toLowerCase().split(' ')[0])
+      } else {
+        console.log('Invalid choice, defaulting to Node.js')
+        resolve('node')
+      }
+    })
+  })
+}
+
+const detectProjectType = (): { type: ProjectType; needsConfirmation: boolean } => {
+  // If package.json exists, always assume Node.js (no confirmation needed)
   if (fs.existsSync(path.resolve(process.cwd(), 'package.json'))) {
-    return 'node'
+    return { type: 'node', needsConfirmation: false }
   }
 
   // No package.json - check for Deno config files
@@ -68,7 +91,7 @@ const detectProjectType = (): ProjectType => {
     fs.existsSync(path.resolve(process.cwd(), 'deno.json')) ||
     fs.existsSync(path.resolve(process.cwd(), 'deno.jsonc'))
   ) {
-    return 'deno'
+    return { type: 'deno', needsConfirmation: true }
   }
 
   // Check for Deno enabled in VSCode settings
@@ -77,15 +100,47 @@ const detectProjectType = (): ProjectType => {
     try {
       const settings = JSON.parse(fs.readFileSync(vscodeSettingsPath, 'utf8'))
       if (settings['deno.enable'] === true) {
-        return 'deno'
+        return { type: 'deno', needsConfirmation: true }
       }
     } catch {
       // Ignore parsing errors
     }
   }
 
-  // Default to Node.js if no config found (will create package.json)
-  return 'node'
+  // Default to Node.js if no config found (needs confirmation)
+  return { type: 'node', needsConfirmation: true }
+}
+
+const confirmProjectType = async (
+  detectedType: ProjectType,
+  needsConfirmation: boolean
+): Promise<ProjectType> => {
+  if (!needsConfirmation) {
+    return detectedType
+  }
+
+  const typeLabel = detectedType === 'deno' ? 'Deno' : 'Node.js'
+  console.log(`\nDetected project type: ${typeLabel}`)
+  const isCorrect = await prompt('Is this correct?')
+
+  if (isCorrect) {
+    return detectedType
+  }
+
+  // Let user choose
+  const choice = await promptChoice('\nPlease select your project type:', [
+    'Node.js',
+    'Deno',
+    'Bun',
+  ])
+
+  if (choice === 'bun') {
+    console.log('\n❌ Bun is not supported at this time.')
+    console.log('Please choose another option.\n')
+    return confirmProjectType(detectedType, true)
+  }
+
+  return choice as ProjectType
 }
 
 const isDenoAvailable = (): boolean => {
@@ -94,6 +149,27 @@ const isDenoAvailable = (): boolean => {
     return true
   } catch {
     return false
+  }
+}
+
+const generateDenoConfig = (baseConfigPath: string): Record<string, unknown> => {
+  // Read the base config
+  const baseConfig = JSON.parse(fs.readFileSync(baseConfigPath, 'utf8'))
+
+  // Modify for Deno
+  return {
+    ...baseConfig,
+    env: {
+      ...baseConfig.env,
+      node: false,
+      mocha: false,
+      jest: false,
+      Deno: true,
+    },
+    globals: {
+      ...baseConfig.globals,
+      Deno: 'readonly',
+    },
   }
 }
 
@@ -211,12 +287,13 @@ const setupVSCode = async (): Promise<void> => {
 }
 
 const main = async (): Promise<void> => {
-  const projectType = detectProjectType()
+  const detection = detectProjectType()
+  const projectType = await confirmProjectType(detection.type, detection.needsConfirmation)
 
   if (projectType === 'deno') {
-    console.log('🦕 Setting up oxlint for Deno project with JavaScript Standard Style...\n')
+    console.log('\n🦕 Setting up oxlint for Deno project with JavaScript Standard Style...\n')
   } else {
-    console.log('🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
+    console.log('\n🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
   }
 
   // 1. Check for existing linting config files
@@ -320,18 +397,18 @@ const main = async (): Promise<void> => {
       fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
       console.log('✓ Created .oxlintrc.json extending ox-standard config')
     } else {
-      // For Deno projects, copy the Deno-specific config
+      // For Deno projects, generate config from base config
       const packageRoot = path.dirname(__filename)
-      const denoConfigPath = path.resolve(packageRoot, '.oxlintrc.deno.json')
+      const baseConfigPath = path.resolve(packageRoot, '.oxlintrc.json')
 
-      if (fs.existsSync(denoConfigPath)) {
-        fs.copyFileSync(denoConfigPath, oxlintrcPath)
-        console.log('✓ Created .oxlintrc.json with Deno-specific configuration')
+      if (fs.existsSync(baseConfigPath)) {
+        const denoConfig = generateDenoConfig(baseConfigPath)
+        fs.writeFileSync(oxlintrcPath, JSON.stringify(denoConfig, undefined, 2))
+        console.log('✓ Created .oxlintrc.json with auto-generated Deno-specific configuration')
       } else {
-        console.warn('⚠️  Could not find Deno config template. Creating basic config.')
+        console.warn('⚠️  Could not find base config. Creating basic Deno config.')
         const basicConfig = {
-          extends: ['./node_modules/ox-standard/.oxlintrc.json'],
-          env: { Deno: true, node: false },
+          env: { Deno: true, node: false, builtin: true, browser: true, es2021: true },
           globals: { Deno: 'readonly' },
         }
         fs.writeFileSync(oxlintrcPath, JSON.stringify(basicConfig, undefined, 2))

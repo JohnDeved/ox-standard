@@ -5,7 +5,6 @@
   "author": "Johann Berger <johann@objekt.stream>",
   "files": [
     ".oxlintrc.json",
-    ".oxlintrc.deno.json",
     ".oxfmtrc.json",
     "setup-oxlint.ts",
     ".vscode"
