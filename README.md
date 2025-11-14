@@ -12,6 +12,8 @@ Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.d
 
 ## 🚀 Quick Setup
 
+### For Node.js Projects
+
 Replace ESLint/Prettier in your project with one command:
 
 ```bash
@@ -25,12 +27,39 @@ That's it! The setup automatically:
 - ✅ Updates your package.json scripts
 - ✅ Configures VSCode settings and extensions
 
+### For Deno Projects
+
+Run the setup in your Deno project directory:
+
+```bash
+npx JohnDeved/ox-standard
+```
+
+The setup will:
+- ✅ Detect your Deno project automatically
+- ✅ Create .oxlintrc.json with Deno-specific configuration
+- ✅ Create .oxfmtrc.json with Standard Style formatting
+- ✅ Add lint task to your deno.json
+- ✅ Configure VSCode settings and extensions
+
+Then install oxlint and oxfmt:
+
+```bash
+# Using npx (recommended)
+npx oxlint --fix .
+npx oxfmt .
+
+# Or install globally with Deno
+deno install -A -n oxlint https://esm.sh/oxlint
+deno install -A -n oxfmt https://esm.sh/oxfmt
+```
+
 ## ✨ What You Get
 
 ### 🚀 100x Faster Performance
 - **Rust-based oxlint**: Sub-second linting even on large codebases
 - **oxfmt formatter**: Lightning-fast formatting from the oxc ecosystem
-- **Single command**: `npm run lint` handles both linting and formatting
+- **Single command**: `npm run lint` (Node.js) or `deno task lint` (Deno) handles both linting and formatting
 
 ### 📏 JavaScript Standard Style Enforced
 - No semicolons, single quotes, 2-space indentation
@@ -39,6 +68,7 @@ That's it! The setup automatically:
 
 ### 🎯 Zero Configuration
 - Works out of the box for TypeScript and React
+- Supports both Node.js and Deno projects
 - Extensible configs you can customize
 - VSCode integration with recommended extensions
 
@@ -87,6 +117,8 @@ The setup script handles everything automatically:
 
 ## 📖 Manual Installation
 
+### Node.js Projects
+
 Prefer manual setup?
 
 ```bash
@@ -96,6 +128,29 @@ echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.js
 cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json
 
 npm pkg set scripts.lint="oxlint --fix .; oxfmt ."
+```
+
+### Deno Projects
+
+For Deno projects, configuration is embedded directly:
+
+```bash
+# Run setup script
+npx JohnDeved/ox-standard
+
+# Or manually create configs
+# The setup script will generate .oxlintrc.json with Deno-specific settings
+# including Deno global environment and optimized ignore patterns
+
+# Add to deno.json:
+{
+  "tasks": {
+    "lint": "npx oxlint --fix . && npx oxfmt ."
+  }
+}
+
+# Run linting
+deno task lint
 ```
 
 ## 🔧 Complete Rule Reference
