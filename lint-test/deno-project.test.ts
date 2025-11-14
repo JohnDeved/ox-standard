@@ -89,20 +89,29 @@ export { testFunction }
   })
 
   it('should detect linting issues in Deno project', () => {
-    const result = execSync('npx oxlint --format json test.ts', {
-      cwd: testProjectDir,
-      encoding: 'utf8',
-    })
+    try {
+      execSync('npx oxlint --format json test.ts', {
+        cwd: testProjectDir,
+        encoding: 'utf8',
+      })
+      // If no error, check we didn't get diagnostics (unexpected)
+      throw new Error('Expected oxlint to find issues')
+    } catch (error: unknown) {
+      // oxlint returns non-zero when it finds issues
+      if (error && typeof error === 'object' && 'stdout' in error) {
+        const output = JSON.parse(error.stdout as string)
+        expect(output).toHaveProperty('diagnostics')
+        expect(Array.isArray(output.diagnostics)).toBe(true)
 
-    const output = JSON.parse(result)
-    expect(output).toHaveProperty('diagnostics')
-    expect(Array.isArray(output.diagnostics)).toBe(true)
-
-    // Should detect "no-var" rule violation
-    const hasNoVarError = output.diagnostics.some(
-      (d: { code?: string }) => d.code === 'no-var'
-    )
-    expect(hasNoVarError).toBe(true)
+        // Should detect "no-var" rule violation
+        const hasNoVarError = output.diagnostics.some(
+          (d: { code?: string }) => d.code === 'eslint(no-var)'
+        )
+        expect(hasNoVarError).toBe(true)
+      } else {
+        throw error
+      }
+    }
   })
 
   it('should fix linting issues with --fix flag', () => {
@@ -110,15 +119,20 @@ export { testFunction }
     const originalContent = fs.readFileSync(path.join(testProjectDir, 'test.ts'), 'utf8')
     expect(originalContent).toContain('var oldVar')
 
-    // Run oxlint with --fix
-    execSync('npx oxlint --fix test.ts', {
-      cwd: testProjectDir,
-      encoding: 'utf8',
-    })
+    // Run oxlint with --fix (ignore exit code since there may still be unfixable errors)
+    try {
+      execSync('npx oxlint --fix test.ts', {
+        cwd: testProjectDir,
+        encoding: 'utf8',
+      })
+    } catch {
+      // Ignore errors, --fix may still exit with 1 if there are unfixable issues
+    }
 
     // Check that var was changed to const/let
     const fixedContent = fs.readFileSync(path.join(testProjectDir, 'test.ts'), 'utf8')
     expect(fixedContent).not.toContain('var oldVar')
+    expect(fixedContent).toMatch(/(?:const|let) oldVar/)
   })
 
   it('should format code with oxfmt', () => {
@@ -169,9 +183,7 @@ export const readFile = async (path: string) => {
   it('should run lint task from deno.json', () => {
     // This tests that the task command works
     // We just verify the task exists and can be parsed
-    const denoJson = JSON.parse(
-      fs.readFileSync(path.join(testProjectDir, 'deno.json'), 'utf8')
-    )
+    const denoJson = JSON.parse(fs.readFileSync(path.join(testProjectDir, 'deno.json'), 'utf8'))
 
     expect(denoJson.tasks).toBeDefined()
     expect(denoJson.tasks.lint).toBe('npx oxlint --fix . && npx oxfmt .')
