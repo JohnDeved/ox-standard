@@ -58,7 +58,12 @@ const prompt = (question: string): Promise<boolean> => {
 }
 
 const detectProjectType = (): ProjectType => {
-  // Check for Deno config files
+  // If package.json exists, always assume Node.js
+  if (fs.existsSync(path.resolve(process.cwd(), 'package.json'))) {
+    return 'node'
+  }
+
+  // No package.json - check for Deno config files
   if (
     fs.existsSync(path.resolve(process.cwd(), 'deno.json')) ||
     fs.existsSync(path.resolve(process.cwd(), 'deno.jsonc'))
@@ -79,12 +84,7 @@ const detectProjectType = (): ProjectType => {
     }
   }
 
-  // Check for package.json (Node.js)
-  if (fs.existsSync(path.resolve(process.cwd(), 'package.json'))) {
-    return 'node'
-  }
-
-  // Default to Node.js if no config found
+  // Default to Node.js if no config found (will create package.json)
   return 'node'
 }
 
@@ -237,12 +237,24 @@ const main = async (): Promise<void> => {
 
   if (projectType === 'node') {
     // Node.js specific setup
+    const packageJsonPath = path.resolve(process.cwd(), 'package.json')
+
+    // Create package.json if it doesn't exist
+    if (!fs.existsSync(packageJsonPath)) {
+      console.log('No package.json found. Initializing npm project...')
+      try {
+        execSync('npm init -y', { stdio: 'inherit' })
+        console.log('✓ Created package.json')
+      } catch {
+        console.error('❌ Failed to create package.json')
+        process.exit(1)
+      }
+    }
+
     // 2. Check for installed ESLint-related packages
     let installedPackages: string[] = []
     try {
-      const pkgJson = JSON.parse(
-        fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
-      )
+      const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
       const allDeps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
       installedPackages = [...ESLINT_PACKAGES, ...FORMATTER_PACKAGES].filter(pkg => allDeps?.[pkg])
     } catch {}
