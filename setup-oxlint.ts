@@ -97,79 +97,6 @@ const isDenoAvailable = (): boolean => {
   }
 }
 
-// Safely parse JSONC by removing comments while preserving string literals
-const parseJsonc = (content: string): unknown => {
-  // This is a simple but safe approach: remove comments outside of strings
-  let inString = false
-  let inSingleLineComment = false
-  let inMultiLineComment = false
-  let result = ''
-  let escapeNext = false
-
-  for (let i = 0; i < content.length; i++) {
-    const char = content[i]
-    const nextChar = content[i + 1] || ''
-
-    // Handle escape sequences in strings
-    if (escapeNext) {
-      if (inString) {
-        result += char
-      }
-      escapeNext = false
-      continue
-    }
-
-    if (char === '\\' && inString) {
-      result += char
-      escapeNext = true
-      continue
-    }
-
-    // Toggle string state
-    if (char === '"' && !inSingleLineComment && !inMultiLineComment) {
-      inString = !inString
-      result += char
-      continue
-    }
-
-    // Skip characters in comments
-    if (inSingleLineComment) {
-      if (char === '\n') {
-        inSingleLineComment = false
-        result += char
-      }
-      continue
-    }
-
-    if (inMultiLineComment) {
-      if (char === '*' && nextChar === '/') {
-        inMultiLineComment = false
-        i++ // Skip the '/'
-      }
-      continue
-    }
-
-    // Detect comment starts (only outside strings)
-    if (!inString) {
-      if (char === '/' && nextChar === '/') {
-        inSingleLineComment = true
-        i++ // Skip the second '/'
-        continue
-      }
-      if (char === '/' && nextChar === '*') {
-        inMultiLineComment = true
-        i++ // Skip the '*'
-        continue
-      }
-    }
-
-    // Add character to result
-    result += char
-  }
-
-  return JSON.parse(result)
-}
-
 const isVSCodeCliAvailable = (): boolean => {
   try {
     execSync('code --version', { stdio: 'ignore' })
@@ -369,155 +296,35 @@ const main = async (): Promise<void> => {
   // 4. Create minimal .oxlintrc.json that extends from the package
   const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
   if (!fs.existsSync(oxlintrcPath)) {
-    const config =
-      projectType === 'node'
-        ? {
-            extends: ['./node_modules/ox-standard/.oxlintrc.json'],
-            // Users can override rules here:
-            // rules: {
-            //   "no-console": "warn"
-            // }
-          }
-        : {
-            // Inline config for Deno since it doesn't have node_modules
-            plugins: ['unicorn', 'typescript', 'oxc', 'react', 'react_perf'],
-            categories: {
-              correctness: 'error',
-              suspicious: 'warn',
-              style: 'off',
-            },
-            rules: {
-              'space-infix-ops': 'error',
-              eqeqeq: 'error',
-              curly: 'allow',
-              yoda: 'error',
-              'prefer-object-spread': 'error',
-              'prefer-template': 'warn',
-              'prefer-rest-params': 'error',
-              'prefer-destructuring': 'warn',
-              'prefer-exponentiation-operator': 'error',
-              'operator-assignment': 'warn',
-              'new-cap': 'error',
-              'no-multi-assign': 'error',
-              'no-nested-ternary': 'warn',
-              'no-duplicate-imports': 'error',
-              'no-template-curly-in-string': 'error',
-              'no-lone-blocks': 'error',
-              'no-labels': 'error',
-              'no-extra-label': 'error',
-              'sort-imports': 'off',
-              'unicorn/prefer-string-starts-ends-with': 'error',
-              'unicorn/prefer-string-trim-start-end': 'error',
-              'unicorn/prefer-spread': 'error',
-              'unicorn/prefer-logical-operator-over-ternary': 'warn',
-              'unicorn/prefer-includes': 'error',
-              'unicorn/prefer-array-index-of': 'warn',
-              'unicorn/prefer-object-from-entries': 'warn',
-              'unicorn/prefer-optional-catch-binding': 'error',
-              'unicorn/prefer-global-this': 'warn',
-              'unicorn/no-nested-ternary': 'warn',
-              'unicorn/no-console-spaces': 'error',
-              'unicorn/empty-brace-spaces': 'error',
-              'unicorn/throw-new-error': 'error',
-              'unicorn/number-literal-case': 'error',
-              'unicorn/no-zero-fractions': 'error',
-              'unicorn/consistent-existence-index-check': 'warn',
-              'no-var': 'error',
-              'no-debugger': 'error',
-              'typescript/consistent-type-definitions': 'error',
-              'typescript/consistent-type-imports': 'error',
-              'typescript/no-inferrable-types': 'error',
-              'typescript/no-empty-interface': 'warn',
-              'typescript/no-explicit-any': 'warn',
-              'typescript/no-unnecessary-boolean-literal-compare': 'error',
-              'typescript/no-unnecessary-type-arguments': 'error',
-              'typescript/no-unnecessary-type-assertion': 'error',
-              'typescript/no-unnecessary-type-constraint': 'error',
-              'typescript/non-nullable-type-assertion-style': 'error',
-              'typescript/prefer-as-const': 'error',
-              'typescript/array-type': 'error',
-              'typescript/ban-ts-comment': 'error',
-              'typescript/consistent-indexed-object-style': 'error',
-              'typescript/no-namespace': 'error',
-              'typescript/prefer-function-type': 'error',
-              'typescript/prefer-namespace-keyword': 'error',
-              'typescript/prefer-for-of': 'warn',
-              'typescript/no-confusing-void-expression': 'off',
-              'typescript/no-floating-promises': 'off',
-              'typescript/no-var-requires': 'off',
-              'typescript/no-misused-promises': 'off',
-              'typescript/explicit-function-return-type': 'off',
-              'typescript/promise-function-async': 'off',
-              'typescript/no-for-in-array': 'off',
-              'typescript/return-await': 'off',
-              'typescript/no-non-null-assertion': 'off',
-              'react/self-closing-comp': 'error',
-              'react/jsx-curly-brace-presence': 'error',
-              'react/jsx-fragments': 'error',
-              'react/jsx-no-useless-fragment': 'error',
-              'react/jsx-boolean-value': 'error',
-              'react/rules-of-hooks': 'error',
-              'react/no-unknown-property': 'off',
-              'react/react-in-jsx-scope': 'off',
-              'react/jsx-key': 'warn',
-              'import/no-duplicates': 'error',
-              'import/first': 'error',
-              'import/exports-last': 'off',
-              'import/no-anonymous-default-export': 'warn',
-            },
-            settings: {
-              'jsx-a11y': {
-                polymorphicPropName: null,
-                components: {},
-                attributes: {},
-              },
-              next: {
-                rootDir: [],
-              },
-              react: {
-                formComponents: [],
-                linkComponents: [],
-                version: 'detect',
-              },
-              jsdoc: {
-                ignorePrivate: false,
-                ignoreInternal: false,
-                ignoreReplacesDocs: true,
-                overrideReplacesDocs: true,
-                augmentsExtendsReplacesDocs: false,
-                implementsReplacesDocs: false,
-                exemptDestructuredRootsFromChecks: false,
-                tagNamePreference: {},
-              },
-            },
-            env: {
-              builtin: true,
-              browser: true,
-              es2021: true,
-              node: false,
-              worker: true,
-              mocha: false,
-              jest: false,
-              Deno: true,
-            },
-            globals: {
-              Deno: 'readonly',
-              Atomics: 'readonly',
-              SharedArrayBuffer: 'readonly',
-            },
-            ignorePatterns: [
-              'node_modules/**',
-              'dist/**',
-              'build/**',
-              'coverage/**',
-              '.next/**',
-              'out/**',
-            ],
-          }
-    fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
-    console.log(
-      `✓ Created .oxlintrc.json ${projectType === 'node' ? 'extending ox-standard config' : 'with Deno-specific configuration'}`
-    )
+    if (projectType === 'node') {
+      // For Node.js projects, extend from the package config
+      const config = {
+        extends: ['./node_modules/ox-standard/.oxlintrc.json'],
+        // Users can override rules here:
+        // rules: {
+        //   "no-console": "warn"
+        // }
+      }
+      fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
+      console.log('✓ Created .oxlintrc.json extending ox-standard config')
+    } else {
+      // For Deno projects, copy the Deno-specific config
+      const packageRoot = path.dirname(__filename)
+      const denoConfigPath = path.resolve(packageRoot, '.oxlintrc.deno.json')
+
+      if (fs.existsSync(denoConfigPath)) {
+        fs.copyFileSync(denoConfigPath, oxlintrcPath)
+        console.log('✓ Created .oxlintrc.json with Deno-specific configuration')
+      } else {
+        console.warn('⚠️  Could not find Deno config template. Creating basic config.')
+        const basicConfig = {
+          extends: ['./node_modules/ox-standard/.oxlintrc.json'],
+          env: { Deno: true, node: false },
+          globals: { Deno: 'readonly' },
+        }
+        fs.writeFileSync(oxlintrcPath, JSON.stringify(basicConfig, undefined, 2))
+      }
+    }
   } else {
     console.log('⚠️  .oxlintrc.json already exists, skipping creation.')
   }
@@ -541,54 +348,19 @@ const main = async (): Promise<void> => {
 
   // 6. Update package.json or deno.json with lint and format scripts
   if (projectType === 'node') {
-    const packageJsonPath = path.resolve(process.cwd(), 'package.json')
-    if (fs.existsSync(packageJsonPath)) {
-      try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-        if (!packageJson.scripts) {
-          packageJson.scripts = {}
-        }
-
-        // Add/update lint script that does both linting with fixes and formatting
-        packageJson.scripts.lint = 'oxlint --fix .; oxfmt .'
-
-        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
-        console.log('✓ Added lint script to package.json')
-      } catch {
-        console.warn('⚠️  Could not update package.json scripts')
-      }
+    // Use npm pkg set to update package.json
+    try {
+      execSync('npm pkg set scripts.lint="oxlint --fix .; oxfmt ."', { stdio: 'inherit' })
+      console.log('✓ Added lint script to package.json')
+    } catch {
+      console.warn('⚠️  Could not update package.json scripts')
     }
   } else {
-    // Deno project - update deno.json or deno.jsonc
-    const denoJsonPath = path.resolve(process.cwd(), 'deno.json')
-    const denoJsoncPath = path.resolve(process.cwd(), 'deno.jsonc')
-    let configPath = denoJsonPath
-    if (fs.existsSync(denoJsonPath)) {
-      configPath = denoJsonPath
-    } else if (fs.existsSync(denoJsoncPath)) {
-      configPath = denoJsoncPath
-    }
-
-    try {
-      let denoConfig: Record<string, unknown> = {}
-      if (fs.existsSync(configPath)) {
-        const content = fs.readFileSync(configPath, 'utf8')
-        // Use safe JSONC parser that preserves strings
-        denoConfig = parseJsonc(content) as Record<string, unknown>
-      }
-
-      if (!denoConfig.tasks) {
-        denoConfig.tasks = {}
-      }
-
-      // Add/update lint task
-      ;(denoConfig.tasks as Record<string, string>).lint = 'npx oxlint --fix . && npx oxfmt .'
-
-      fs.writeFileSync(configPath, JSON.stringify(denoConfig, undefined, 2))
-      console.log(`✓ Added lint task to ${path.basename(configPath)}`)
-    } catch (error) {
-      console.warn(`⚠️  Could not update ${path.basename(configPath)} tasks:`, error)
-    }
+    // For Deno projects, use deno task command
+    console.log('ℹ️  To add lint task to deno.json, run:')
+    console.log('  deno task add lint "npx oxlint --fix . && npx oxfmt ."')
+    console.log('  Or manually add to deno.json:')
+    console.log('  "tasks": { "lint": "npx oxlint --fix . && npx oxfmt ." }')
   }
 
   // 7. Setup VSCode integration
