@@ -368,7 +368,7 @@ const main = async (): Promise<void> => {
     }
   } else {
     // Deno specific setup
-    console.log('ℹ️  Deno project detected. Skipping npm package management.')
+    console.log('ℹ️  Deno project detected.')
 
     if (!isDenoAvailable()) {
       console.error('❌ Deno is not available. Please install Deno first: https://deno.land/')
@@ -376,10 +376,24 @@ const main = async (): Promise<void> => {
     }
 
     console.log('✓ Deno runtime detected')
-    console.log('ℹ️  For Deno projects, you will need to install oxlint and oxfmt manually:')
-    console.log('  deno install -A -n oxlint https://esm.sh/oxlint')
-    console.log('  deno install -A -n oxfmt https://esm.sh/oxfmt')
-    console.log('  Or use npx: npx oxlint / npx oxfmt')
+
+    // Install oxlint and oxfmt using Deno's npm support
+    console.log('Installing oxlint and oxfmt via npm:...')
+    try {
+      execSync('deno install npm:oxlint@1.25.0', { stdio: 'inherit' })
+      console.log('✓ Installed oxlint')
+    } catch {
+      console.error('❌ Failed to install oxlint')
+      process.exit(1)
+    }
+
+    try {
+      execSync('deno install npm:oxfmt@0.9.0', { stdio: 'inherit' })
+      console.log('✓ Installed oxfmt')
+    } catch {
+      console.error('❌ Failed to install oxfmt')
+      process.exit(1)
+    }
   }
 
   // 4. Create minimal .oxlintrc.json that extends from the package
@@ -445,11 +459,42 @@ const main = async (): Promise<void> => {
       console.warn('⚠️  Could not update package.json scripts')
     }
   } else {
-    // For Deno projects, use deno task command
-    console.log('ℹ️  To add lint task to deno.json, run:')
-    console.log('  deno task add lint "npx oxlint --fix . && npx oxfmt ."')
-    console.log('  Or manually add to deno.json:')
-    console.log('  "tasks": { "lint": "npx oxlint --fix . && npx oxfmt ." }')
+    // For Deno projects, use deno.json tasks
+    // Create or update deno.json with tasks
+    const denoJsonPath = path.resolve(process.cwd(), 'deno.json')
+    const denoJsoncPath = path.resolve(process.cwd(), 'deno.jsonc')
+    let configPath = denoJsonPath
+    if (fs.existsSync(denoJsonPath)) {
+      configPath = denoJsonPath
+    } else if (fs.existsSync(denoJsoncPath)) {
+      configPath = denoJsoncPath
+    }
+
+    try {
+      let denoConfig: Record<string, unknown> = {}
+
+      // Read existing config if it exists
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8')
+        try {
+          denoConfig = JSON.parse(content)
+        } catch {
+          console.warn('⚠️  Could not parse existing deno config, creating new one')
+        }
+      }
+
+      // Add tasks
+      if (!denoConfig.tasks) {
+        denoConfig.tasks = {}
+      }
+      ;(denoConfig.tasks as Record<string, string>).lint = 'oxlint --fix . && oxfmt .'
+
+      // Write back
+      fs.writeFileSync(configPath, JSON.stringify(denoConfig, null, 2))
+      console.log(`✓ Added lint task to ${path.basename(configPath)}`)
+    } catch (error) {
+      console.warn('⚠️  Could not update deno config:', error)
+    }
   }
 
   // 7. Setup VSCode integration
@@ -462,11 +507,8 @@ const main = async (): Promise<void> => {
     console.log('  npm run lint       - Lint and format code automatically')
   } else {
     console.log('  deno task lint     - Lint and format code automatically')
-    console.log('  or: npx oxlint --fix . && npx oxfmt .')
   }
 
-  console.log('  npx oxlint --help  - View all oxlint options')
-  console.log('  npx oxfmt --help   - View all oxfmt options')
   console.log('\n📖 Customize rules in .oxlintrc.json and .oxfmtrc.json if needed')
   console.log('🔧 JavaScript Standard Style is enforced for both linting and formatting')
 }
