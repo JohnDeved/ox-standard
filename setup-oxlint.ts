@@ -66,6 +66,19 @@ const detectProjectType = (): ProjectType => {
     return 'deno'
   }
 
+  // Check for Deno enabled in VSCode settings
+  const vscodeSettingsPath = path.resolve(process.cwd(), '.vscode', 'settings.json')
+  if (fs.existsSync(vscodeSettingsPath)) {
+    try {
+      const settings = JSON.parse(fs.readFileSync(vscodeSettingsPath, 'utf8'))
+      if (settings['deno.enable'] === true) {
+        return 'deno'
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+  }
+
   // Check for package.json (Node.js)
   if (fs.existsSync(path.resolve(process.cwd(), 'package.json'))) {
     return 'node'
@@ -82,6 +95,79 @@ const isDenoAvailable = (): boolean => {
   } catch {
     return false
   }
+}
+
+// Safely parse JSONC by removing comments while preserving string literals
+const parseJsonc = (content: string): unknown => {
+  // This is a simple but safe approach: remove comments outside of strings
+  let inString = false
+  let inSingleLineComment = false
+  let inMultiLineComment = false
+  let result = ''
+  let escapeNext = false
+
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i]
+    const nextChar = content[i + 1] || ''
+
+    // Handle escape sequences in strings
+    if (escapeNext) {
+      if (inString) {
+        result += char
+      }
+      escapeNext = false
+      continue
+    }
+
+    if (char === '\\' && inString) {
+      result += char
+      escapeNext = true
+      continue
+    }
+
+    // Toggle string state
+    if (char === '"' && !inSingleLineComment && !inMultiLineComment) {
+      inString = !inString
+      result += char
+      continue
+    }
+
+    // Skip characters in comments
+    if (inSingleLineComment) {
+      if (char === '\n') {
+        inSingleLineComment = false
+        result += char
+      }
+      continue
+    }
+
+    if (inMultiLineComment) {
+      if (char === '*' && nextChar === '/') {
+        inMultiLineComment = false
+        i++ // Skip the '/'
+      }
+      continue
+    }
+
+    // Detect comment starts (only outside strings)
+    if (!inString) {
+      if (char === '/' && nextChar === '/') {
+        inSingleLineComment = true
+        i++ // Skip the second '/'
+        continue
+      }
+      if (char === '/' && nextChar === '*') {
+        inMultiLineComment = true
+        i++ // Skip the '*'
+        continue
+      }
+    }
+
+    // Add character to result
+    result += char
+  }
+
+  return JSON.parse(result)
 }
 
 const isVSCodeCliAvailable = (): boolean => {
@@ -487,9 +573,8 @@ const main = async (): Promise<void> => {
       let denoConfig: Record<string, unknown> = {}
       if (fs.existsSync(configPath)) {
         const content = fs.readFileSync(configPath, 'utf8')
-        // Remove comments for JSON parsing (simple approach for jsonc)
-        const cleanContent = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
-        denoConfig = JSON.parse(cleanContent)
+        // Use safe JSONC parser that preserves strings
+        denoConfig = parseJsonc(content) as Record<string, unknown>
       }
 
       if (!denoConfig.tasks) {
