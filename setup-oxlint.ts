@@ -4,6 +4,8 @@ import path from 'path'
 import readline from 'readline'
 import { execSync } from 'child_process'
 
+type ProjectType = 'node' | 'deno' | 'bun'
+
 const LINT_CONFIG_FILES = [
   '.oxlintrc.json',
   'oxlint.json',
@@ -53,6 +55,122 @@ const prompt = (question: string): Promise<boolean> => {
       resolve(/^y(es)?$/i.test(answer.trim()))
     })
   })
+}
+
+const promptChoice = (question: string, choices: string[]): Promise<string> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+  return new Promise(resolve => {
+    console.log(question)
+    choices.forEach((choice, index) => {
+      console.log(`  ${index + 1}. ${choice}`)
+    })
+    rl.question(`Enter your choice (1-${choices.length}): `, answer => {
+      rl.close()
+      const choice = parseInt(answer.trim())
+      if (choice >= 1 && choice <= choices.length) {
+        resolve(choices[choice - 1].toLowerCase().split(' ')[0])
+      } else {
+        console.log('Invalid choice, defaulting to Node.js')
+        resolve('node')
+      }
+    })
+  })
+}
+
+const detectProjectType = (): { type: ProjectType; needsConfirmation: boolean } => {
+  // If package.json exists, always assume Node.js (no confirmation needed)
+  if (fs.existsSync(path.resolve(process.cwd(), 'package.json'))) {
+    return { type: 'node', needsConfirmation: false }
+  }
+
+  // No package.json - check for Deno config files
+  if (
+    fs.existsSync(path.resolve(process.cwd(), 'deno.json')) ||
+    fs.existsSync(path.resolve(process.cwd(), 'deno.jsonc'))
+  ) {
+    return { type: 'deno', needsConfirmation: true }
+  }
+
+  // Check for Deno enabled in VSCode settings
+  const vscodeSettingsPath = path.resolve(process.cwd(), '.vscode', 'settings.json')
+  if (fs.existsSync(vscodeSettingsPath)) {
+    try {
+      const settings = JSON.parse(fs.readFileSync(vscodeSettingsPath, 'utf8'))
+      if (settings['deno.enable'] === true) {
+        return { type: 'deno', needsConfirmation: true }
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+  }
+
+  // Default to Node.js if no config found (needs confirmation)
+  return { type: 'node', needsConfirmation: true }
+}
+
+const confirmProjectType = async (
+  detectedType: ProjectType,
+  needsConfirmation: boolean
+): Promise<ProjectType> => {
+  if (!needsConfirmation) {
+    return detectedType
+  }
+
+  const typeLabel = detectedType === 'deno' ? 'Deno' : 'Node.js'
+  console.log(`\nDetected project type: ${typeLabel}`)
+  const isCorrect = await prompt('Is this correct?')
+
+  if (isCorrect) {
+    return detectedType
+  }
+
+  // Let user choose
+  const choice = await promptChoice('\nPlease select your project type:', [
+    'Node.js',
+    'Deno',
+    'Bun',
+  ])
+
+  if (choice === 'bun') {
+    console.log('\n❌ Bun is not supported at this time.')
+    console.log('Please choose another option.\n')
+    return confirmProjectType(detectedType, true)
+  }
+
+  return choice as ProjectType
+}
+
+const isDenoAvailable = (): boolean => {
+  try {
+    execSync('deno --version', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const generateDenoConfig = (baseConfigPath: string): Record<string, unknown> => {
+  // Read the base config
+  const baseConfig = JSON.parse(fs.readFileSync(baseConfigPath, 'utf8'))
+
+  // Modify for Deno
+  return {
+    ...baseConfig,
+    env: {
+      ...baseConfig.env,
+      node: false,
+      mocha: false,
+      jest: false,
+      Deno: true,
+    },
+    globals: {
+      ...baseConfig.globals,
+      Deno: 'readonly',
+    },
+  }
 }
 
 const isVSCodeCliAvailable = (): boolean => {
@@ -169,7 +287,14 @@ const setupVSCode = async (): Promise<void> => {
 }
 
 const main = async (): Promise<void> => {
-  console.log('🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
+  const detection = detectProjectType()
+  const projectType = await confirmProjectType(detection.type, detection.needsConfirmation)
+
+  if (projectType === 'deno') {
+    console.log('\n🦕 Setting up oxlint for Deno project with JavaScript Standard Style...\n')
+  } else {
+    console.log('\n🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
+  }
 
   // 1. Check for existing linting config files
   const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
@@ -187,57 +312,102 @@ const main = async (): Promise<void> => {
     }
   }
 
-  // 2. Check for installed ESLint-related packages
-  let installedPackages: string[] = []
-  try {
-    const pkgJson = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'))
-    const allDeps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
-    installedPackages = [...ESLINT_PACKAGES, ...FORMATTER_PACKAGES].filter(pkg => allDeps?.[pkg])
-  } catch {}
+  if (projectType === 'node') {
+    // Node.js specific setup
+    const packageJsonPath = path.resolve(process.cwd(), 'package.json')
 
-  if (installedPackages.length) {
-    console.log('Found installed ESLint/formatter packages:', installedPackages.join(', '))
-    const shouldUninstall = await prompt('Uninstall them before continuing?')
-    if (shouldUninstall) {
+    // Create package.json if it doesn't exist
+    if (!fs.existsSync(packageJsonPath)) {
+      console.log('No package.json found. Initializing npm project...')
       try {
-        execSync(`npm uninstall ${installedPackages.join(' ')}`, {
-          stdio: 'inherit',
-        })
-        console.log('✓ Uninstalled packages:', installedPackages.join(', '))
+        execSync('npm init -y', { stdio: 'inherit' })
+        console.log('✓ Created package.json')
       } catch {
-        console.error('❌ Failed to uninstall some packages. Please check manually.')
+        console.error('❌ Failed to create package.json')
         process.exit(1)
       }
-    } else {
-      console.log('❌ Aborting setup. Please remove conflicting packages first.')
+    }
+
+    // 2. Check for installed ESLint-related packages
+    let installedPackages: string[] = []
+    try {
+      const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+      const allDeps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
+      installedPackages = [...ESLINT_PACKAGES, ...FORMATTER_PACKAGES].filter(pkg => allDeps?.[pkg])
+    } catch {}
+
+    if (installedPackages.length) {
+      console.log('Found installed ESLint/formatter packages:', installedPackages.join(', '))
+      const shouldUninstall = await prompt('Uninstall them before continuing?')
+      if (shouldUninstall) {
+        try {
+          execSync(`npm uninstall ${installedPackages.join(' ')}`, {
+            stdio: 'inherit',
+          })
+          console.log('✓ Uninstalled packages:', installedPackages.join(', '))
+        } catch {
+          console.error('❌ Failed to uninstall some packages. Please check manually.')
+          process.exit(1)
+        }
+      } else {
+        console.log('❌ Aborting setup. Please remove conflicting packages first.')
+        process.exit(1)
+      }
+    }
+
+    // 3. Install ox-standard from GitHub
+    console.log('Installing ox-standard...')
+    try {
+      execSync('npm install --save-dev github:JohnDeved/ox-standard', {
+        stdio: 'inherit',
+      })
+      console.log('✓ Installed ox-standard')
+    } catch {
+      console.error('❌ Failed to install ox-standard')
       process.exit(1)
     }
-  }
+  } else {
+    // Deno specific setup
+    if (!isDenoAvailable()) {
+      console.error('❌ Deno is not available. Please install Deno first: https://deno.land/')
+      process.exit(1)
+    }
 
-  // 3. Install ox-standard from GitHub
-  console.log('Installing ox-standard...')
-  try {
-    execSync('npm install --save-dev github:JohnDeved/ox-standard', {
-      stdio: 'inherit',
-    })
-    console.log('✓ Installed ox-standard')
-  } catch {
-    console.error('❌ Failed to install ox-standard')
-    process.exit(1)
+    console.log('✓ Deno project detected - will use npx for oxlint and oxfmt')
   }
 
   // 4. Create minimal .oxlintrc.json that extends from the package
   const oxlintrcPath = path.resolve(process.cwd(), '.oxlintrc.json')
   if (!fs.existsSync(oxlintrcPath)) {
-    const config = {
-      extends: ['./node_modules/ox-standard/.oxlintrc.json'],
-      // Users can override rules here:
-      // rules: {
-      //   "no-console": "warn"
-      // }
+    if (projectType === 'node') {
+      // For Node.js projects, extend from the package config
+      const config = {
+        extends: ['./node_modules/ox-standard/.oxlintrc.json'],
+        // Users can override rules here:
+        // rules: {
+        //   "no-console": "warn"
+        // }
+      }
+      fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
+      console.log('✓ Created .oxlintrc.json extending ox-standard config')
+    } else {
+      // For Deno projects, generate config from base config
+      const packageRoot = path.dirname(__filename)
+      const baseConfigPath = path.resolve(packageRoot, '.oxlintrc.json')
+
+      if (fs.existsSync(baseConfigPath)) {
+        const denoConfig = generateDenoConfig(baseConfigPath)
+        fs.writeFileSync(oxlintrcPath, JSON.stringify(denoConfig, undefined, 2))
+        console.log('✓ Created .oxlintrc.json with auto-generated Deno-specific configuration')
+      } else {
+        console.warn('⚠️  Could not find base config. Creating basic Deno config.')
+        const basicConfig = {
+          env: { Deno: true, node: false, builtin: true, browser: true, es2021: true },
+          globals: { Deno: 'readonly' },
+        }
+        fs.writeFileSync(oxlintrcPath, JSON.stringify(basicConfig, undefined, 2))
+      }
     }
-    fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
-    console.log('✓ Created .oxlintrc.json extending ox-standard config')
   } else {
     console.log('⚠️  .oxlintrc.json already exists, skipping creation.')
   }
@@ -259,22 +429,51 @@ const main = async (): Promise<void> => {
     console.log('⚠️  .oxfmtrc.json already exists, skipping creation.')
   }
 
-  // 6. Update package.json with lint and format scripts
-  const packageJsonPath = path.resolve(process.cwd(), 'package.json')
-  if (fs.existsSync(packageJsonPath)) {
+  // 6. Update package.json or deno.json with lint and format scripts
+  if (projectType === 'node') {
+    // Use npm pkg set to update package.json
     try {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-      if (!packageJson.scripts) {
-        packageJson.scripts = {}
-      }
-
-      // Add/update lint script that does both linting with fixes and formatting
-      packageJson.scripts.lint = 'oxlint --fix .; oxfmt .'
-
-      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 2))
+      execSync('npm pkg set scripts.lint="oxlint --fix .; oxfmt ."', { stdio: 'inherit' })
       console.log('✓ Added lint script to package.json')
     } catch {
       console.warn('⚠️  Could not update package.json scripts')
+    }
+  } else {
+    // For Deno projects, use deno.json tasks
+    // Create or update deno.json with tasks
+    const denoJsonPath = path.resolve(process.cwd(), 'deno.json')
+    const denoJsoncPath = path.resolve(process.cwd(), 'deno.jsonc')
+    let configPath = denoJsonPath
+    if (fs.existsSync(denoJsonPath)) {
+      configPath = denoJsonPath
+    } else if (fs.existsSync(denoJsoncPath)) {
+      configPath = denoJsoncPath
+    }
+
+    try {
+      let denoConfig: Record<string, unknown> = {}
+
+      // Read existing config if it exists
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8')
+        try {
+          denoConfig = JSON.parse(content)
+        } catch {
+          console.warn('⚠️  Could not parse existing deno config, creating new one')
+        }
+      }
+
+      // Add tasks
+      if (!denoConfig.tasks) {
+        denoConfig.tasks = {}
+      }
+      ;(denoConfig.tasks as Record<string, string>).lint = 'npx oxlint --fix . && npx oxfmt .'
+
+      // Write back
+      fs.writeFileSync(configPath, JSON.stringify(denoConfig, null, 2))
+      console.log(`✓ Added lint task to ${path.basename(configPath)}`)
+    } catch (error) {
+      console.warn('⚠️  Could not update deno config:', error)
     }
   }
 
@@ -283,9 +482,13 @@ const main = async (): Promise<void> => {
 
   console.log('\n✅ Setup complete!')
   console.log('\n📋 Next steps:')
-  console.log('  npm run lint       - Lint and format code automatically')
-  console.log('  npx oxlint --help  - View all oxlint options')
-  console.log('  npx oxfmt --help   - View all oxfmt options')
+
+  if (projectType === 'node') {
+    console.log('  npm run lint       - Lint and format code automatically')
+  } else {
+    console.log('  deno task lint     - Lint and format code automatically')
+  }
+
   console.log('\n📖 Customize rules in .oxlintrc.json and .oxfmtrc.json if needed')
   console.log('🔧 JavaScript Standard Style is enforced for both linting and formatting')
 }
