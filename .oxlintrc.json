@@ -101,7 +101,7 @@
     "react": {
       "formComponents": [],
       "linkComponents": [],
-      "version": "detect"
+      "version": "18"
     },
     "jsdoc": {
       "ignorePrivate": false,
@@ -127,12 +127,5 @@
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
-  "ignorePatterns": [
-    "node_modules/**",
-    "dist/**",
-    "build/**",
-    "coverage/**",
-    ".next/**",
-    "out/**"
-  ]
+  "ignorePatterns": ["node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
 }

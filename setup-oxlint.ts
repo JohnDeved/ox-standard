@@ -19,6 +19,19 @@ const LINT_CONFIG_FILES = [
   'eslint.json',
 ]
 
+const FORMATTER_CONFIG_FILES = [
+  '.prettierrc',
+  '.prettierrc.json',
+  '.prettierrc.js',
+  '.prettierrc.cjs',
+  '.prettierrc.mjs',
+  '.prettierrc.yaml',
+  '.prettierrc.yml',
+  'prettier.config.js',
+  'prettier.config.cjs',
+  'prettier.config.mjs',
+]
+
 // List of ESLint-related packages to check/uninstall
 const ESLINT_PACKAGES = [
   'eslint',
@@ -149,6 +162,30 @@ const isDenoAvailable = (): boolean => {
     return true
   } catch {
     return false
+  }
+}
+
+const detectReactMajorVersion = (packageJsonPath: string): string | undefined => {
+  try {
+    const pkgJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+    const allDeps = {
+      ...pkgJson.dependencies,
+      ...pkgJson.devDependencies,
+      ...pkgJson.peerDependencies,
+    }
+
+    const reactVersionRaw = allDeps?.react
+    if (!reactVersionRaw || typeof reactVersionRaw !== 'string') return undefined
+
+    const match = reactVersionRaw.match(/(\d{1,2})/)
+    if (!match) return undefined
+
+    const major = Number.parseInt(match[1], 10)
+    if (Number.isNaN(major) || major < 1) return undefined
+
+    return String(major)
+  } catch {
+    return undefined
   }
 }
 
@@ -296,10 +333,12 @@ const main = async (): Promise<void> => {
     console.log('\n🚀 Setting up oxlint with JavaScript Standard Style and oxfmt formatter...\n')
   }
 
-  // 1. Check for existing linting config files
-  const foundConfigs = LINT_CONFIG_FILES.filter(f => fs.existsSync(path.resolve(process.cwd(), f)))
+  // 1. Check for existing lint/formatter config files
+  const foundConfigs = [...LINT_CONFIG_FILES, ...FORMATTER_CONFIG_FILES].filter(f =>
+    fs.existsSync(path.resolve(process.cwd(), f))
+  )
   if (foundConfigs.length) {
-    console.log('Found existing lint config files:', foundConfigs.join(', '))
+    console.log('Found existing lint/formatter config files:', foundConfigs.join(', '))
     const shouldRemove = await prompt('Remove them before continuing?')
     if (shouldRemove) {
       for (const f of foundConfigs) {
@@ -381,8 +420,18 @@ const main = async (): Promise<void> => {
   if (!fs.existsSync(oxlintrcPath)) {
     if (projectType === 'node') {
       // For Node.js projects, extend from the package config
+      const reactMajor = detectReactMajorVersion(path.resolve(process.cwd(), 'package.json'))
       const config = {
         extends: ['./node_modules/ox-standard/.oxlintrc.json'],
+        ...(reactMajor
+          ? {
+              settings: {
+                react: {
+                  version: reactMajor,
+                },
+              },
+            }
+          : {}),
         // Users can override rules here:
         // rules: {
         //   "no-console": "warn"
