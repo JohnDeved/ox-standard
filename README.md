@@ -21,7 +21,8 @@ npx JohnDeved/ox-standard
 ```
 
 That's it! The setup automatically:
-- ✅ Removes ESLint and Prettier packages and configs 
+
+- ✅ Removes ESLint and Prettier packages and configs
 - ✅ Installs oxlint with Standard Style configuration
 - ✅ Installs oxfmt formatter with Standard Style configuration
 - ✅ Updates your package.json scripts
@@ -36,6 +37,7 @@ npx JohnDeved/ox-standard
 ```
 
 The setup will:
+
 - ✅ Detect your Deno project automatically
 - ✅ Create .oxlintrc.json with Deno-specific configuration
 - ✅ Create .oxfmtrc.json with Standard Style formatting
@@ -57,16 +59,19 @@ deno install -A -n oxfmt https://esm.sh/oxfmt
 ## ✨ What You Get
 
 ### 🚀 100x Faster Performance
+
 - **Rust-based oxlint**: Sub-second linting even on large codebases
 - **oxfmt formatter**: Lightning-fast formatting from the oxc ecosystem
 - **Single command**: `npm run lint` (Node.js) or `deno task lint` (Deno) handles both linting and formatting
 
 ### 📏 JavaScript Standard Style Enforced
+
 - No semicolons, single quotes, 2-space indentation
 - Strict equality (`===`), modern ES6+ patterns
 - React hooks best practices, TypeScript consistency
 
 ### 🎯 Zero Configuration
+
 - Works out of the box for TypeScript and React
 - Supports both Node.js and Deno projects
 - Extensible configs you can customize
@@ -81,25 +86,26 @@ Need to override rules? Easy:
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
   "rules": {
-    "no-console": "warn"
-  }
+    "no-console": "warn",
+  },
 }
 ```
 
 ```jsonc
-// .oxfmtrc.json  
+// .oxfmtrc.json
 {
   "singleQuote": true,
   "semi": false,
   "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5"
+  "trailingComma": "es5",
 }
 ```
 
 ## 💡 VSCode Integration
 
 The setup automatically configures VSCode for the best experience:
+
 - **Auto-formatting on save** with oxfmt via the oxc-vscode extension
 - **Auto-fixing** linting issues on save
 - **Recommended extensions** installation prompt
@@ -109,8 +115,9 @@ The `.vscode/settings.json` is configured to use oxc-vscode as the default forma
 ## 🆚 Migrating from ESLint/Prettier?
 
 The setup script handles everything automatically:
+
 1. Detects existing ESLint/Prettier configs and packages
-2. Prompts for removal confirmation  
+2. Prompts for removal confirmation
 3. Uninstalls old dependencies
 4. Installs and configures ox-standard
 5. Updates VSCode settings
@@ -158,29 +165,34 @@ deno task lint
 70+ carefully selected rules across:
 
 ### JavaScript Standard Style
+
 - `eqeqeq` - Strict equality (`===`)
-- `curly` - Consistent braces  
+- `curly` - Consistent braces
 - `no-var` - Use `const`/`let`
 - `space-infix-ops` - Proper spacing
 - `yoda` - Readable comparisons
 
-### Modern JavaScript  
+### Modern JavaScript
+
 - `prefer-template` - Template literals
 - `prefer-destructuring` - Modern patterns
 - `prefer-object-spread` - Clean objects
 - `no-duplicate-imports` - Organized imports
 
 ### React Best Practices
+
 - `rules-of-hooks` - Proper hooks usage
 - `jsx-curly-brace-presence` - Clean JSX
 - `self-closing-comp` - Concise components
 
 ### TypeScript Integration
+
 - `consistent-type-imports` - Clean imports
-- `array-type` - Consistent syntax  
+- `array-type` - Consistent syntax
 - `prefer-as-const` - Type assertions
 
 ### Enhanced Patterns (Unicorn)
+
 - `prefer-includes` - Better array methods
 - `prefer-string-starts-ends-with` - Modern strings
 - `throw-new-error` - Proper errors

@@ -1,6 +1,6 @@
 {
   "name": "ox-standard",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "author": "Johann Berger <johann@objekt.stream>",
   "bin": {
