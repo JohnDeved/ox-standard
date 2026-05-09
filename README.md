@@ -162,7 +162,7 @@ deno task lint
 
 ## 🔧 Complete Rule Reference
 
-110+ carefully selected rules across:
+100+ carefully selected rules across:
 
 ### JavaScript Standard Style
 
