@@ -162,7 +162,7 @@ deno task lint
 
 ## 🔧 Complete Rule Reference
 
-70+ carefully selected rules across:
+100+ carefully selected rules across:
 
 ### JavaScript Standard Style
 
@@ -171,6 +171,9 @@ deno task lint
 - `no-var` - Use `const`/`let`
 - `space-infix-ops` - Proper spacing
 - `yoda` - Readable comparisons
+- `no-constructor-return` - No return values from constructors
+- `no-self-compare` - Flags `x === x` tautologies
+- `no-else-return` - Removes redundant else after return
 
 ### Modern JavaScript
 
@@ -184,18 +187,49 @@ deno task lint
 - `rules-of-hooks` - Proper hooks usage
 - `jsx-curly-brace-presence` - Clean JSX
 - `self-closing-comp` - Concise components
+- `jsx-no-duplicate-props` - Catches duplicate prop bugs
+- `void-dom-elements-no-children` - No children on `<img>`, `<br>` etc.
+- `no-danger` *(warn)* - Flags `dangerouslySetInnerHTML`
+- `jsx-no-constructed-context-values` *(warn)* - Prevents needless re-renders
+- `react_perf/jsx-no-jsx-as-prop` *(warn)* - JSX in props causes re-renders
 
 ### TypeScript Integration
 
 - `consistent-type-imports` - Clean imports
 - `array-type` - Consistent syntax
 - `prefer-as-const` - Type assertions
+- `prefer-optional-chain` - `a?.b` over `a && a.b`
+- `prefer-nullish-coalescing` - `??` over `||` for null checks
+- `no-unnecessary-qualifier` - Removes redundant namespace qualifiers
+- `no-useless-empty-export` - Removes redundant `export {}`
+- `no-duplicate-enum-values` / `no-mixed-enums` - Enum correctness guards
+- `no-unsafe-declaration-merging` - Class+interface merge safety
 
 ### Enhanced Patterns (Unicorn)
 
 - `prefer-includes` - Better array methods
 - `prefer-string-starts-ends-with` - Modern strings
 - `throw-new-error` - Proper errors
+- `prefer-string-slice` - `.slice()` over `.substring()`
+- `prefer-node-protocol` - `'node:fs'` over `'fs'`
+- `prefer-negative-index` - `arr.at(-1)` over `arr[arr.length - 1]`
+- `prefer-structured-clone` - `structuredClone()` over JSON round-trip
+- `no-negated-condition` - Flips negated if/ternary for readability
+- `no-typeof-undefined` - `x === undefined` over `typeof x`
+- `no-lonely-if` - Hoists lone `if` out of `else`
+- `no-useless-promise-resolve-reject` - Removes redundant wrappers
+- `no-instanceof-array` - `Array.isArray()` over `instanceof Array`
+- `no-negation-in-equality-check` - `!!x === y` instead of `!x === y`
+- `require-array-join-separator` - Explicit separator in `.join()`
+
+### Performance (Oxc)
+
+- `no-accumulating-spread` - Prevents O(n²) spread in loops
+- `no-map-spread` *(warn)* - Spread in map callbacks
+
+### Import Safety
+
+- `import/no-cycle` - Detects circular imports
 
 ## 🤝 Contributing
 

@@ -24,24 +24,46 @@
     "no-lone-blocks": "error",
     "no-labels": "error",
     "no-extra-label": "error",
+    "no-else-return": "warn",
+    "no-constructor-return": "error",
+    "no-self-compare": "error",
     "sort-imports": "off",
 
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-string-trim-start-end": "error",
+    "unicorn/prefer-string-slice": "warn",
+    "unicorn/prefer-string-raw": "warn",
     "unicorn/prefer-spread": "error",
     "unicorn/prefer-logical-operator-over-ternary": "warn",
     "unicorn/prefer-includes": "error",
     "unicorn/prefer-array-index-of": "warn",
+    "unicorn/prefer-array-flat-map": "warn",
     "unicorn/prefer-object-from-entries": "warn",
     "unicorn/prefer-optional-catch-binding": "error",
     "unicorn/prefer-global-this": "warn",
+    "unicorn/prefer-negative-index": "warn",
+    "unicorn/prefer-set-size": "warn",
+    "unicorn/prefer-structured-clone": "warn",
+    "unicorn/prefer-blob-reading-methods": "warn",
+    "unicorn/prefer-dom-node-append": "warn",
+    "unicorn/prefer-dom-node-remove": "warn",
+    "unicorn/prefer-node-protocol": "warn",
     "unicorn/no-nested-ternary": "warn",
+    "unicorn/no-negated-condition": "warn",
+    "unicorn/no-typeof-undefined": "warn",
+    "unicorn/no-lonely-if": "warn",
+    "unicorn/no-useless-promise-resolve-reject": "error",
+    "unicorn/no-instanceof-array": "error",
+    "unicorn/no-thenable": "error",
+    "unicorn/no-negation-in-equality-check": "error",
     "unicorn/no-console-spaces": "error",
     "unicorn/empty-brace-spaces": "error",
     "unicorn/throw-new-error": "error",
     "unicorn/number-literal-case": "error",
     "unicorn/no-zero-fractions": "error",
     "unicorn/consistent-existence-index-check": "warn",
+    "unicorn/consistent-empty-array-spread": "warn",
+    "unicorn/require-array-join-separator": "warn",
 
     "no-var": "error",
     "no-debugger": "error",
@@ -55,15 +77,22 @@
     "typescript/no-unnecessary-type-arguments": "error",
     "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unnecessary-qualifier": "warn",
+    "typescript/no-useless-empty-export": "warn",
+    "typescript/no-duplicate-enum-values": "error",
+    "typescript/no-mixed-enums": "error",
+    "typescript/no-unsafe-declaration-merging": "error",
     "typescript/non-nullable-type-assertion-style": "error",
     "typescript/prefer-as-const": "error",
+    "typescript/prefer-optional-chain": "warn",
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/prefer-function-type": "error",
+    "typescript/prefer-for-of": "warn",
     "typescript/array-type": "error",
     "typescript/ban-ts-comment": "error",
     "typescript/consistent-indexed-object-style": "error",
     "typescript/no-namespace": "error",
-    "typescript/prefer-function-type": "error",
     "typescript/prefer-namespace-keyword": "error",
-    "typescript/prefer-for-of": "warn",
     "typescript/no-confusing-void-expression": "off",
     "typescript/no-floating-promises": "off",
     "typescript/no-var-requires": "off",
@@ -79,16 +108,67 @@
     "react/jsx-fragments": "error",
     "react/jsx-no-useless-fragment": "error",
     "react/jsx-boolean-value": "error",
+    "react/jsx-no-duplicate-props": "error",
     "react/rules-of-hooks": "error",
+    "react/void-dom-elements-no-children": "error",
+    "react/no-danger": "warn",
+    "react/jsx-no-constructed-context-values": "warn",
     "react/no-unknown-property": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-key": "warn",
 
+    "react_perf/jsx-no-jsx-as-prop": "warn",
+
+    "oxc/no-accumulating-spread": "error",
+    "oxc/no-map-spread": "warn",
+
+    "import/no-cycle": "error",
     "import/no-duplicates": "error",
     "import/first": "error",
     "import/exports-last": "off",
     "import/no-anonymous-default-export": "warn"
   },
+  "settings": {
+    "jsx-a11y": {
+      "polymorphicPropName": null,
+      "components": {},
+      "attributes": {}
+    },
+    "next": {
+      "rootDir": []
+    },
+    "react": {
+      "formComponents": [],
+      "linkComponents": [],
+      "version": "18"
+    },
+    "jsdoc": {
+      "ignorePrivate": false,
+      "ignoreInternal": false,
+      "ignoreReplacesDocs": true,
+      "overrideReplacesDocs": true,
+      "augmentsExtendsReplacesDocs": false,
+      "implementsReplacesDocs": false,
+      "exemptDestructuredRootsFromChecks": false,
+      "tagNamePreference": {}
+    }
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "worker": true,
+    "mocha": true,
+    "jest": true
+  },
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "ignorePatterns": ["node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
+}
+
   "settings": {
     "jsx-a11y": {
       "polymorphicPropName": null,
