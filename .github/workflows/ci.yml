@@ -92,6 +92,13 @@ jobs:
             yarn) touch yarn.lock ;;
             bun)  touch bun.lockb ;;
           esac
+          # Yarn 4 hardened mode requires opting in to git repos
+          if [ "${{ matrix.pm }}" = "yarn" ]; then
+            cat > .yarnrc.yml <<'YAMLEOF'
+          enableHardenedMode: false
+          enableImmutableInstalls: false
+          YAMLEOF
+          fi
 
       - name: Run setup-oxlint (non-interactive)
         working-directory: /tmp/fixture
