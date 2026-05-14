@@ -17,7 +17,7 @@ Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.d
 Replace ESLint/Prettier in your project with one command:
 
 ```bash
-npx JohnDeved/ox-standard
+npx ox-standard
 ```
 
 That's it! The setup automatically:
@@ -33,7 +33,17 @@ That's it! The setup automatically:
 Run the setup in your Deno project directory:
 
 ```bash
-npx JohnDeved/ox-standard
+npx ox-standard
+```
+
+### Non-interactive / CI usage
+
+Pass `--yes` to auto-accept every prompt and `--type=` to skip detection. `--no-vscode` skips the VSCode integration step.
+
+```bash
+npx ox-standard --yes --type=node --no-vscode
+npx ox-standard --yes --type=deno
+npx ox-standard --help
 ```
 
 The setup will:
@@ -129,7 +139,7 @@ The setup script handles everything automatically:
 Prefer manual setup?
 
 ```bash
-npm install --save-dev github:JohnDeved/ox-standard
+npm install --save-dev ox-standard
 
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json

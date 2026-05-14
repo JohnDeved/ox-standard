@@ -1,0 +1,4 @@
+{
+  "ignorePatterns": ["dist/**", "node_modules/**", ".vscode/**", "**/*.d.ts"],
+  "entry": ["setup-oxlint.ts"]
+}

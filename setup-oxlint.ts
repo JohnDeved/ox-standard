@@ -4,7 +4,71 @@ import path from 'node:path'
 import readline from 'node:readline'
 import { execSync } from 'node:child_process'
 
-type ProjectType = 'node' | 'deno' | 'bun'
+type ProjectType = 'node' | 'deno'
+
+interface CliOptions {
+  yes: boolean
+  noVscode: boolean
+  typeOverride?: ProjectType
+}
+
+const HELP_TEXT = `ox-standard — set up oxlint + oxfmt with JavaScript Standard Style
+
+Usage: npx ox-standard [options]
+
+Options:
+  -y, --yes              Non-interactive mode. Auto-accept every prompt
+                         (remove old configs, uninstall ESLint, install
+                         missing VSCode extensions). Required for CI.
+  -t, --type <node|deno> Skip project-type detection.
+  --no-vscode            Skip VSCode integration step.
+  -h, --help             Show this help.
+`
+
+const parseCliOptions = (argv: string[]): CliOptions => {
+  const opts: CliOptions = { yes: false, noVscode: false }
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg === '-y' || arg === '--yes') opts.yes = true
+    else if (arg === '--no-vscode') opts.noVscode = true
+    else if (arg === '-h' || arg === '--help') {
+      console.log(HELP_TEXT)
+      process.exit(0)
+    } else if (arg === '-t' || arg === '--type') {
+      const next = argv[++i]
+      if (next !== 'node' && next !== 'deno') {
+        console.error(`❌ Invalid --type "${next}". Expected "node" or "deno".`)
+        process.exit(1)
+      }
+      opts.typeOverride = next
+    } else if (arg.startsWith('--type=')) {
+      const value = arg.slice('--type='.length)
+      if (value !== 'node' && value !== 'deno') {
+        console.error(`❌ Invalid --type "${value}". Expected "node" or "deno".`)
+        process.exit(1)
+      }
+      opts.typeOverride = value
+    } else {
+      console.error(`❌ Unknown argument: ${arg}`)
+      console.error(HELP_TEXT)
+      process.exit(1)
+    }
+  }
+  return opts
+}
+
+const cliOptions = parseCliOptions(process.argv.slice(2))
+
+const isInteractive = (): boolean => Boolean(process.stdin.isTTY) && !cliOptions.yes
+
+const requireInteractive = (what: string): void => {
+  if (isInteractive()) return
+  console.error(
+    `❌ ${what} requires interactive input but stdin is not a TTY (or --yes was passed). ` +
+      'Use --type=<node|deno> and --yes to run non-interactively.'
+  )
+  process.exit(1)
+}
 
 const LINT_CONFIG_FILES = [
   '.oxlintrc.json',
@@ -58,6 +122,16 @@ const FORMATTER_PACKAGES = [
 ]
 
 const prompt = (question: string): Promise<boolean> => {
+  if (cliOptions.yes) {
+    console.log(`${question} (y/N): y  [auto: --yes]`)
+    return Promise.resolve(true)
+  }
+  if (!process.stdin.isTTY) {
+    console.error(
+      `❌ Non-interactive shell cannot answer: "${question}". Pass --yes to auto-accept.`
+    )
+    process.exit(1)
+  }
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -71,6 +145,7 @@ const prompt = (question: string): Promise<boolean> => {
 }
 
 const promptChoice = (question: string, choices: string[]): Promise<string> => {
+  requireInteractive('Project-type confirmation prompt')
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -135,17 +210,7 @@ const confirmProjectType = async (
   }
 
   // Let user choose
-  const choice = await promptChoice('\nPlease select your project type:', [
-    'Node.js',
-    'Deno',
-    'Bun',
-  ])
-
-  if (choice === 'bun') {
-    console.log('\n❌ Bun is not supported at this time.')
-    console.log('Please choose another option.\n')
-    return confirmProjectType(detectedType, true)
-  }
+  const choice = await promptChoice('\nPlease select your project type:', ['Node.js', 'Deno'])
 
   return choice as ProjectType
 }
@@ -510,8 +575,13 @@ const printIntro = (projectType: ProjectType): void => {
 }
 
 const main = async (): Promise<void> => {
-  const detection = detectProjectType()
-  const projectType = await confirmProjectType(detection.type, detection.needsConfirmation)
+  let projectType: ProjectType
+  if (cliOptions.typeOverride) {
+    projectType = cliOptions.typeOverride
+  } else {
+    const detection = detectProjectType()
+    projectType = await confirmProjectType(detection.type, detection.needsConfirmation)
+  }
 
   printIntro(projectType)
   await removeExistingConfigFilesOrAbort()
@@ -523,8 +593,13 @@ const main = async (): Promise<void> => {
   createOxfmtConfig()
   addLintScript(projectType)
 
-  await setupVSCode()
+  if (cliOptions.noVscode) console.log('\n⏭  Skipping VSCode setup (--no-vscode).')
+  else await setupVSCode()
+
   printNextSteps(projectType)
 }
 
-main().catch(console.error)
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})

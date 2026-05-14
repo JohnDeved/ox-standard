@@ -110,3 +110,4 @@ lint-test/test-*.tsx
 
 # Test project directory
 .test-deno-project/
+dist/

@@ -1,16 +1,16 @@
 {
   "name": "ox-standard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "author": "Johann Berger <johann@objekt.stream>",
   "bin": {
-    "ox-standard": "./setup-oxlint.ts",
-    "setup-oxlint": "./setup-oxlint.ts"
+    "ox-standard": "./dist/setup-oxlint.js",
+    "setup-oxlint": "./dist/setup-oxlint.js"
   },
   "files": [
     ".oxlintrc.json",
     ".oxfmtrc.json",
-    "setup-oxlint.ts",
+    "dist/",
     ".vscode"
   ],
   "scripts": {
@@ -19,15 +19,18 @@
     "format:check": "oxfmt --check .",
     "test:format": "vitest run lint-test/format.test.ts",
     "lint": "oxlint --fix .; oxfmt .",
-    "fix": "npm run lint; npm run format"
+    "fix": "npm run lint; npm run format",
+    "build": "tsc && (printf '#!/usr/bin/env node\n'; tail -n +2 dist/setup-oxlint.js) > dist/setup-oxlint.js.tmp && mv dist/setup-oxlint.js.tmp dist/setup-oxlint.js && chmod +x dist/setup-oxlint.js",
+    "prepublishOnly": "npm run build && npm run lint && npx vitest run"
   },
   "dependencies": {
     "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0",
-    "tsx": "^4.21.0"
+    "oxlint": "^1.63.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.0",
     "vitest": "^4.1.5"
   },
   "peerDependencies": {
