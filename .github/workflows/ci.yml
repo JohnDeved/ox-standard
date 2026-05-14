@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: build + lint + test (Node ${{ matrix.node }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run all tests
+        run: npx vitest run
+
+  smoke-package-managers:
+    name: smoke-test setup with ${{ matrix.pm }}
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        pm: [npm, pnpm, yarn, bun]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build CLI
+        run: npm run build
+
+      - name: Set up pnpm
+        if: matrix.pm == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Yarn (Corepack)
+        if: matrix.pm == 'yarn'
+        run: |
+          corepack enable
+          corepack prepare yarn@stable --activate
+
+      - name: Set up Bun
+        if: matrix.pm == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Create fixture project
+        run: |
+          mkdir -p /tmp/fixture
+          cd /tmp/fixture
+          echo '{"name":"smoke-fixture","version":"0.0.0","private":true}' > package.json
+          # Drop the right lockfile so detectPackageManager picks the matrix PM
+          case "${{ matrix.pm }}" in
+            npm)  touch package-lock.json ;;
+            pnpm) touch pnpm-lock.yaml ;;
+            yarn) touch yarn.lock ;;
+            bun)  touch bun.lockb ;;
+          esac
+
+      - name: Run setup-oxlint (non-interactive)
+        working-directory: /tmp/fixture
+        run: node "$GITHUB_WORKSPACE/dist/setup-oxlint.js" --yes --no-vscode --type=node
+
+      - name: Assert generated artifacts
+        working-directory: /tmp/fixture
+        run: |
+          set -e
+          test -f .oxlintrc.json || (echo "missing .oxlintrc.json" && exit 1)
+          test -f .oxfmtrc.json || (echo "missing .oxfmtrc.json" && exit 1)
+          node -e '
+            const pkg = require("./package.json");
+            if (!pkg.scripts || !pkg.scripts.lint) {
+              console.error("lint script not added");
+              process.exit(1);
+            }
+            if (!pkg.scripts.lint.includes("oxlint") || !pkg.scripts.lint.includes("oxfmt")) {
+              console.error("lint script content unexpected:", pkg.scripts.lint);
+              process.exit(1);
+            }
+            console.log("lint script:", pkg.scripts.lint);
+          '
+          # ox-standard should be installed as a dep
+          test -d node_modules/ox-standard || (echo "ox-standard not installed" && exit 1)
+          echo "✅ ${{ matrix.pm }} smoke test passed"
