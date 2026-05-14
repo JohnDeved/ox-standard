@@ -41,5 +41,31 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/JohnDeved/ox-standard#readme",
+  "bugs": {
+    "url": "https://github.com/JohnDeved/ox-standard/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnDeved/ox-standard.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "oxlint",
+    "oxfmt",
+    "oxc",
+    "lint",
+    "linter",
+    "formatter",
+    "eslint",
+    "prettier",
+    "standard",
+    "typescript",
+    "react",
+    "deno"
+  ]
 }
