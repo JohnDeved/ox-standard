@@ -18,6 +18,7 @@ A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https:
 ## Contents
 
 - [Quick Setup](#-quick-setup)
+- [For AI Agents](#for-ai-agents)
 - [CLI Reference](#-cli-reference)
 - [What You Get](#-what-you-get)
 - [Customization](#-customization)
@@ -73,6 +74,26 @@ Then run:
 ```bash
 deno task lint
 ```
+
+### For AI Agents
+
+Paste this into any coding-agent chat (Copilot, Claude Code, Cursor, opencode, etc.) when you want it to migrate the current repository:
+
+```
+Set up ox-standard in this project by following https://raw.githubusercontent.com/JohnDeved/ox-standard/main/README.md — auto-detect the package manager and project type, run the CLI non-interactively, then verify the lint script works.
+```
+
+Or, for agents that prefer running a single shell command, point them at the deterministic non-interactive form:
+
+```bash
+# Node project (auto-detects npm/pnpm/yarn/bun)
+npx -y github:JohnDeved/ox-standard --yes --no-vscode
+
+# Deno project
+npx -y github:JohnDeved/ox-standard --yes --type=deno --no-vscode
+```
+
+The `--yes` flag auto-accepts every prompt (required for non-interactive shells) and `--no-vscode` skips writing `.vscode/` files. Drop `--no-vscode` if you do want VSCode integration.
 
 ---
 
