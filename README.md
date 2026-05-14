@@ -39,10 +39,10 @@ A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https:
 Replace ESLint/Prettier in your project with one command — works with **npm, pnpm, yarn, and bun**:
 
 ```bash
-npx github:JohnDeved/ox-standard          # npm
-pnpm dlx github:JohnDeved/ox-standard     # pnpm
-yarn dlx github:JohnDeved/ox-standard     # yarn (berry)
-bunx github:JohnDeved/ox-standard         # bun
+npx oxc-standard          # npm
+pnpm dlx oxc-standard     # pnpm
+yarn dlx oxc-standard     # yarn (berry)
+bunx oxc-standard         # bun
 ```
 
 The setup auto-detects your package manager (via lockfile, then `npm_config_user_agent`, then the `packageManager` field in `package.json`) and uses the right install/uninstall commands. It then:
@@ -58,7 +58,7 @@ The setup auto-detects your package manager (via lockfile, then `npm_config_user
 Deno doesn't ship a `dlx`-style runner, so use `npx` (Node must be installed alongside Deno):
 
 ```bash
-npx github:JohnDeved/ox-standard --type=deno
+npx oxc-standard --type=deno
 ```
 
 The setup will:
@@ -80,17 +80,17 @@ deno task lint
 Paste this into any coding-agent chat (Copilot, Claude Code, Cursor, opencode, etc.) when you want it to migrate the current repository:
 
 ```
-Set up ox-standard in this project by following https://raw.githubusercontent.com/JohnDeved/ox-standard/main/README.md — auto-detect the package manager and project type, run the CLI non-interactively, then verify the lint script works.
+Set up oxc-standard in this project by following https://raw.githubusercontent.com/JohnDeved/ox-standard/main/README.md — auto-detect the package manager and project type, run the CLI non-interactively, then verify the lint script works.
 ```
 
 Or, for agents that prefer running a single shell command, point them at the deterministic non-interactive form:
 
 ```bash
 # Node project (auto-detects npm/pnpm/yarn/bun)
-npx -y github:JohnDeved/ox-standard --yes --no-vscode
+npx -y oxc-standard --yes --no-vscode
 
 # Deno project
-npx -y github:JohnDeved/ox-standard --yes --type=deno --no-vscode
+npx -y oxc-standard --yes --type=deno --no-vscode
 ```
 
 The `--yes` flag auto-accepts every prompt (required for non-interactive shells) and `--no-vscode` skips writing `.vscode/` files. Drop `--no-vscode` if you do want VSCode integration.
@@ -100,7 +100,7 @@ The `--yes` flag auto-accepts every prompt (required for non-interactive shells)
 ## 📋 CLI Reference
 
 ```
-npx github:JohnDeved/ox-standard [options]
+npx oxc-standard [options]
 ```
 
 | Flag                        | Description                                                                                                           |
@@ -115,13 +115,13 @@ Examples:
 
 ```bash
 # Fully non-interactive Node setup (e.g. inside a CI job)
-npx github:JohnDeved/ox-standard --yes --type=node --no-vscode
+npx oxc-standard --yes --type=node --no-vscode
 
 # Non-interactive Deno setup
-npx github:JohnDeved/ox-standard --yes --type=deno
+npx oxc-standard --yes --type=deno
 
 # Preview what setup would do without changing anything
-npx github:JohnDeved/ox-standard --dry-run --type=node
+npx oxc-standard --dry-run --type=node
 ```
 
 ---
@@ -180,7 +180,7 @@ Skip this step entirely with `--no-vscode`.
 
 ## 🆚 Migrating from ESLint/Prettier
 
-Run `npx github:JohnDeved/ox-standard` and confirm the prompts. The script will:
+Run `npx oxc-standard` and confirm the prompts. The script will:
 
 1. Detect existing ESLint/Prettier configs (`.eslintrc*`, `eslint.config.*`, `.prettierrc*`, `prettier.config.*`) and packages (`eslint`, `prettier`, common plugins/configs).
 2. Ask before deleting configs.
@@ -199,7 +199,7 @@ A typical `package.json` diff after migration:
 -   "eslint": "^9.0.0",
 -   "eslint-config-standard": "^17.0.0",
 -   "prettier": "^3.0.0",
-+   "ox-standard": "github:JohnDeved/ox-standard",
++   "oxc-standard": "^1",
 +   "oxfmt": "^0.48.0",
 +   "oxlint": "^1.63.0"
   }
@@ -214,10 +214,10 @@ A typical `package.json` diff after migration:
 Prefer to skip the script? Pick the install command for your package manager:
 
 ```bash
-npm  install --save-dev github:JohnDeved/ox-standard
-pnpm add     --save-dev github:JohnDeved/ox-standard
-yarn add     --dev      github:JohnDeved/ox-standard
-bun  add     --dev      github:JohnDeved/ox-standard
+npm  install --save-dev oxc-standard
+pnpm add     --save-dev oxc-standard
+yarn add     --dev      oxc-standard
+bun  add     --dev      oxc-standard
 ```
 
 ### Node.js

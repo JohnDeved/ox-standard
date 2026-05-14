@@ -1,6 +1,6 @@
 {
   "name": "oxc-standard",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "keywords": [
     "deno",
@@ -25,6 +25,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JohnDeved/ox-standard.git"
+  },
+  "bin": {
+    "oxc-standard": "dist/setup-oxlint.js",
+    "setup-oxlint": "dist/setup-oxlint.js"
   },
   "files": [
     ".oxlintrc.json",
@@ -63,9 +67,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "bin": {
-    "oxc-standard": "dist/setup-oxlint.js",
-    "setup-oxlint": "dist/setup-oxlint.js"
   }
 }

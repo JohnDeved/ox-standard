@@ -553,12 +553,10 @@ const uninstallLegacyPackagesOrAbort = async (
 const installOxStandard = (pm: PackageManager): void => {
   console.log(`Installing oxc-standard via ${pm}...`)
   try {
-    // The "name@spec" alias form lets yarn berry accept this without an
-    // explicit `approvedGitRepositories` entry; npm/pnpm/bun also accept it.
-    // npm reads the repo's package.json (name: "oxc-standard") and installs
-    // into node_modules/oxc-standard. Once the package is on npm registry,
-    // this can be simplified to 'oxc-standard@^1'.
-    const spec = 'oxc-standard@github:JohnDeved/ox-standard'
+    // Pull from npm registry. Pin to ^1 so users get patches/features but not
+    // future breaking changes. The 'name@spec' form keeps yarn berry happy
+    // without an explicit approvedGitRepositories entry.
+    const spec = 'oxc-standard@^1'
     execSafe(PACKAGE_MANAGERS[pm].installDevSaved([spec]))
     console.log('✓ Installed oxc-standard')
   } catch {

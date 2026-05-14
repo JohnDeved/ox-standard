@@ -92,15 +92,12 @@ jobs:
             yarn) touch yarn.lock ;;
             bun)  touch bun.lockb ;;
           esac
-          # Yarn 4 hardened mode requires opting in to git repos
+          # Yarn 4 needs node-modules linker for cross-PM compat
           if [ "${{ matrix.pm }}" = "yarn" ]; then
             cat > .yarnrc.yml <<'YAMLEOF'
           nodeLinker: node-modules
-          enableHardenedMode: false
           enableImmutableInstalls: false
           enableScripts: false
-          approvedGitRepositories:
-            - "https://github.com/JohnDeved/ox-standard.git"
           YAMLEOF
           fi
 
