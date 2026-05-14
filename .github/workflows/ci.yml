@@ -95,6 +95,7 @@ jobs:
           # Yarn 4 hardened mode requires opting in to git repos
           if [ "${{ matrix.pm }}" = "yarn" ]; then
             cat > .yarnrc.yml <<'YAMLEOF'
+          nodeLinker: node-modules
           enableHardenedMode: false
           enableImmutableInstalls: false
           enableScripts: false
