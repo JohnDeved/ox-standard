@@ -14,13 +14,16 @@ Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.d
 
 ### For Node.js Projects
 
-Replace ESLint/Prettier in your project with one command:
+Replace ESLint/Prettier in your project with one command — works with **npm, pnpm, yarn, and bun**:
 
 ```bash
-npx ox-standard
+npx ox-standard          # npm
+pnpm dlx ox-standard     # pnpm
+yarn dlx ox-standard     # yarn (berry)
+bunx ox-standard         # bun
 ```
 
-That's it! The setup automatically:
+The setup auto-detects your package manager (via lockfile, `npm_config_user_agent`, or the `packageManager` field in `package.json`) and uses the right install/uninstall commands for it. It then:
 
 - ✅ Removes ESLint and Prettier packages and configs
 - ✅ Installs oxlint with Standard Style configuration

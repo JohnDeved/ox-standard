@@ -6,6 +6,88 @@ import { execSync } from 'node:child_process'
 
 type ProjectType = 'node' | 'deno'
 
+type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
+
+interface PackageManagerCommands {
+  init: string
+  installDevSaved: (pkgs: string[]) => string
+  uninstall: (pkgs: string[]) => string
+  setLintScript: string
+  runLint: string
+}
+
+const PACKAGE_MANAGERS: Record<PackageManager, PackageManagerCommands> = {
+  npm: {
+    init: 'npm init -y',
+    installDevSaved: pkgs => `npm install --save-dev ${pkgs.join(' ')}`,
+    uninstall: pkgs => `npm uninstall ${pkgs.join(' ')}`,
+    setLintScript: 'npm pkg set scripts.lint="oxlint --fix .; oxfmt ."',
+    runLint: 'npm run lint',
+  },
+  yarn: {
+    init: 'yarn init -y',
+    installDevSaved: pkgs => `yarn add --dev ${pkgs.join(' ')}`,
+    uninstall: pkgs => `yarn remove ${pkgs.join(' ')}`,
+    setLintScript: 'npm pkg set scripts.lint="oxlint --fix .; oxfmt ."',
+    runLint: 'yarn lint',
+  },
+  pnpm: {
+    init: 'pnpm init',
+    installDevSaved: pkgs => `pnpm add --save-dev ${pkgs.join(' ')}`,
+    uninstall: pkgs => `pnpm remove ${pkgs.join(' ')}`,
+    setLintScript: 'npm pkg set scripts.lint="oxlint --fix .; oxfmt ."',
+    runLint: 'pnpm lint',
+  },
+  bun: {
+    init: 'bun init -y',
+    installDevSaved: pkgs => `bun add --dev ${pkgs.join(' ')}`,
+    uninstall: pkgs => `bun remove ${pkgs.join(' ')}`,
+    setLintScript: 'npm pkg set scripts.lint="oxlint --fix .; oxfmt ."',
+    runLint: 'bun run lint',
+  },
+}
+
+const LOCKFILE_TO_PM: Array<[string, PackageManager]> = [
+  ['bun.lockb', 'bun'],
+  ['bun.lock', 'bun'],
+  ['pnpm-lock.yaml', 'pnpm'],
+  ['yarn.lock', 'yarn'],
+  ['package-lock.json', 'npm'],
+]
+
+const PM_PREFIXES: Array<[string, PackageManager]> = [
+  ['bun', 'bun'],
+  ['pnpm', 'pnpm'],
+  ['yarn', 'yarn'],
+  ['npm', 'npm'],
+]
+
+const matchPmByPrefix = (value: string): PackageManager | undefined =>
+  PM_PREFIXES.find(([prefix]) => value.startsWith(prefix))?.[1]
+
+const detectPmFromLockfile = (cwd: string): PackageManager | undefined =>
+  LOCKFILE_TO_PM.find(([file]) => fs.existsSync(path.join(cwd, file)))?.[1]
+
+const detectPmFromUserAgent = (): PackageManager | undefined => {
+  const ua = process.env.npm_config_user_agent
+  return ua ? matchPmByPrefix(ua) : undefined
+}
+
+const detectPmFromPackageJson = (cwd: string): PackageManager | undefined => {
+  try {
+    const pkgPath = path.join(cwd, 'package.json')
+    if (!fs.existsSync(pkgPath)) return undefined
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+    const pm = typeof pkg.packageManager === 'string' ? pkg.packageManager : ''
+    return pm ? matchPmByPrefix(pm) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const detectPackageManager = (cwd: string = process.cwd()): PackageManager =>
+  detectPmFromLockfile(cwd) ?? detectPmFromUserAgent() ?? detectPmFromPackageJson(cwd) ?? 'npm'
+
 interface CliOptions {
   yes: boolean
   noVscode: boolean
@@ -382,11 +464,11 @@ const removeExistingConfigFilesOrAbort = async (): Promise<void> => {
   }
 }
 
-const ensurePackageJson = (packageJsonPath: string): void => {
+const ensurePackageJson = (packageJsonPath: string, pm: PackageManager): void => {
   if (fs.existsSync(packageJsonPath)) return
-  console.log('No package.json found. Initializing npm project...')
+  console.log(`No package.json found. Initializing project with ${pm}...`)
   try {
-    execSync('npm init -y', { stdio: 'inherit' })
+    execSync(PACKAGE_MANAGERS[pm].init, { stdio: 'inherit' })
     console.log('✓ Created package.json')
   } catch {
     console.error('❌ Failed to create package.json')
@@ -404,7 +486,10 @@ const findInstalledLegacyPackages = (packageJsonPath: string): string[] => {
   }
 }
 
-const uninstallLegacyPackagesOrAbort = async (packageJsonPath: string): Promise<void> => {
+const uninstallLegacyPackagesOrAbort = async (
+  packageJsonPath: string,
+  pm: PackageManager
+): Promise<void> => {
   const installed = findInstalledLegacyPackages(packageJsonPath)
   if (installed.length === 0) return
 
@@ -415,7 +500,7 @@ const uninstallLegacyPackagesOrAbort = async (packageJsonPath: string): Promise<
     process.exit(1)
   }
   try {
-    execSync(`npm uninstall ${installed.join(' ')}`, { stdio: 'inherit' })
+    execSync(PACKAGE_MANAGERS[pm].uninstall(installed), { stdio: 'inherit' })
     console.log('✓ Uninstalled packages:', installed.join(', '))
   } catch {
     console.error('❌ Failed to uninstall some packages. Please check manually.')
@@ -423,10 +508,13 @@ const uninstallLegacyPackagesOrAbort = async (packageJsonPath: string): Promise<
   }
 }
 
-const installOxStandard = (): void => {
-  console.log('Installing ox-standard...')
+const installOxStandard = (pm: PackageManager): void => {
+  console.log(`Installing ox-standard via ${pm}...`)
   try {
-    execSync('npm install --save-dev github:JohnDeved/ox-standard', { stdio: 'inherit' })
+    // Use the GitHub install spec until the package is published to npm.
+    // npm/pnpm/bun all accept GitHub specs; yarn classic uses the same.
+    const spec = 'github:JohnDeved/ox-standard'
+    execSync(PACKAGE_MANAGERS[pm].installDevSaved([spec]), { stdio: 'inherit' })
     console.log('✓ Installed ox-standard')
   } catch {
     console.error('❌ Failed to install ox-standard')
@@ -436,9 +524,11 @@ const installOxStandard = (): void => {
 
 const setupNodeProject = async (): Promise<void> => {
   const packageJsonPath = path.resolve(process.cwd(), 'package.json')
-  ensurePackageJson(packageJsonPath)
-  await uninstallLegacyPackagesOrAbort(packageJsonPath)
-  installOxStandard()
+  const pm = detectPackageManager()
+  console.log(`📦 Detected package manager: ${pm}`)
+  ensurePackageJson(packageJsonPath, pm)
+  await uninstallLegacyPackagesOrAbort(packageJsonPath, pm)
+  installOxStandard(pm)
 }
 
 const setupDenoProject = (): void => {
@@ -551,9 +641,10 @@ const addLintScript = (projectType: ProjectType): void => {
 const printNextSteps = (projectType: ProjectType): void => {
   console.log('\n✅ Setup complete!')
   console.log('\n📋 Next steps:')
-  if (projectType === 'node')
-    console.log('  npm run lint       - Lint and format code automatically')
-  else console.log('  deno task lint     - Lint and format code automatically')
+  if (projectType === 'node') {
+    const pm = detectPackageManager()
+    console.log(`  ${PACKAGE_MANAGERS[pm].runLint}       - Lint and format code automatically`)
+  } else console.log('  deno task lint     - Lint and format code automatically')
   console.log('\n📖 Customize rules in .oxlintrc.json and .oxfmtrc.json if needed')
   console.log('🔧 JavaScript Standard Style is enforced for both linting and formatting')
 }
@@ -622,6 +713,8 @@ export {
   parseTypeArg,
   parseReactMajor,
   detectProjectType,
+  detectPackageManager,
+  PACKAGE_MANAGERS,
   hasDenoConfigFile,
   hasDenoEnabledInVSCode,
   generateDenoConfig,
