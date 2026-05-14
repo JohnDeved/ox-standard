@@ -18,6 +18,7 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "test:format": "vitest run lint-test/format.test.ts",
+    "test:setup": "npm run build && vitest run setup-test/",
     "lint": "oxlint --fix .; oxfmt .",
     "fix": "npm run lint; npm run format",
     "build": "tsc && (printf '#!/usr/bin/env node\n'; tail -n +2 dist/setup-oxlint.js) > dist/setup-oxlint.js.tmp && mv dist/setup-oxlint.js.tmp dist/setup-oxlint.js && chmod +x dist/setup-oxlint.js",

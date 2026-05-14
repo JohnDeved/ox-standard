@@ -10,7 +10,10 @@ interface CliOptions {
   yes: boolean
   noVscode: boolean
   typeOverride?: ProjectType
+  showHelp?: boolean
 }
+
+class CliArgError extends Error {}
 
 const HELP_TEXT = `ox-standard — set up oxlint + oxfmt with JavaScript Standard Style
 
@@ -25,39 +28,28 @@ Options:
   -h, --help             Show this help.
 `
 
+const parseTypeArg = (value: string | undefined): ProjectType => {
+  if (value !== 'node' && value !== 'deno') {
+    throw new CliArgError(`Invalid --type "${value}". Expected "node" or "deno".`)
+  }
+  return value
+}
+
 const parseCliOptions = (argv: string[]): CliOptions => {
   const opts: CliOptions = { yes: false, noVscode: false }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '-y' || arg === '--yes') opts.yes = true
     else if (arg === '--no-vscode') opts.noVscode = true
-    else if (arg === '-h' || arg === '--help') {
-      console.log(HELP_TEXT)
-      process.exit(0)
-    } else if (arg === '-t' || arg === '--type') {
-      const next = argv[++i]
-      if (next !== 'node' && next !== 'deno') {
-        console.error(`❌ Invalid --type "${next}". Expected "node" or "deno".`)
-        process.exit(1)
-      }
-      opts.typeOverride = next
-    } else if (arg.startsWith('--type=')) {
-      const value = arg.slice('--type='.length)
-      if (value !== 'node' && value !== 'deno') {
-        console.error(`❌ Invalid --type "${value}". Expected "node" or "deno".`)
-        process.exit(1)
-      }
-      opts.typeOverride = value
-    } else {
-      console.error(`❌ Unknown argument: ${arg}`)
-      console.error(HELP_TEXT)
-      process.exit(1)
-    }
+    else if (arg === '-h' || arg === '--help') opts.showHelp = true
+    else if (arg === '-t' || arg === '--type') opts.typeOverride = parseTypeArg(argv[++i])
+    else if (arg.startsWith('--type=')) opts.typeOverride = parseTypeArg(arg.slice('--type='.length))
+    else throw new CliArgError(`Unknown argument: ${arg}`)
   }
   return opts
 }
 
-const cliOptions = parseCliOptions(process.argv.slice(2))
+let cliOptions: CliOptions = { yes: false, noVscode: false }
 
 const isInteractive = (): boolean => Boolean(process.stdin.isTTY) && !cliOptions.yes
 
@@ -599,7 +591,43 @@ const main = async (): Promise<void> => {
   printNextSteps(projectType)
 }
 
-main().catch(err => {
-  console.error(err)
-  process.exit(1)
-})
+const runCli = async (argv: string[]): Promise<void> => {
+  try {
+    cliOptions = parseCliOptions(argv)
+  } catch (err) {
+    if (err instanceof CliArgError) {
+      console.error(`❌ ${err.message}`)
+      console.error(HELP_TEXT)
+      process.exit(1)
+    }
+    throw err
+  }
+  if (cliOptions.showHelp) {
+    console.log(HELP_TEXT)
+    return
+  }
+  await main()
+}
+
+// Only run when invoked as a CommonJS CLI; harmless when imported by ESM tests
+if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module) {
+  runCli(process.argv.slice(2)).catch(err => {
+    console.error(err)
+    process.exit(1)
+  })
+}
+
+export {
+  parseCliOptions,
+  parseTypeArg,
+  parseReactMajor,
+  detectProjectType,
+  hasDenoConfigFile,
+  hasDenoEnabledInVSCode,
+  generateDenoConfig,
+  resolveDenoConfigPath,
+  findInstalledLegacyPackages,
+  HELP_TEXT,
+  CliArgError,
+  runCli,
+}
