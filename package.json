@@ -22,7 +22,8 @@
     "lint": "oxlint --fix .; oxfmt .",
     "fix": "npm run lint; npm run format",
     "build": "tsc && (printf '#!/usr/bin/env node\n'; tail -n +2 dist/setup-oxlint.js) > dist/setup-oxlint.js.tmp && mv dist/setup-oxlint.js.tmp dist/setup-oxlint.js && chmod +x dist/setup-oxlint.js",
-    "prepublishOnly": "npm run build && npm run lint && npx vitest run"
+    "prepublishOnly": "npm run build && npm run lint && npx vitest run",
+    "test": "vitest run"
   },
   "dependencies": {
     "oxfmt": "^0.48.0",
@@ -37,5 +38,8 @@
   "peerDependencies": {
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
