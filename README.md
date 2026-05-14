@@ -17,10 +17,10 @@ Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.d
 Replace ESLint/Prettier in your project with one command — works with **npm, pnpm, yarn, and bun**:
 
 ```bash
-npx ox-standard          # npm
-pnpm dlx ox-standard     # pnpm
-yarn dlx ox-standard     # yarn (berry)
-bunx ox-standard         # bun
+npx github:JohnDeved/ox-standard          # npm
+pnpm dlx github:JohnDeved/ox-standard     # pnpm
+yarn dlx github:JohnDeved/ox-standard     # yarn (berry)
+bunx github:JohnDeved/ox-standard         # bun
 ```
 
 The setup auto-detects your package manager (via lockfile, `npm_config_user_agent`, or the `packageManager` field in `package.json`) and uses the right install/uninstall commands for it. It then:
@@ -28,15 +28,15 @@ The setup auto-detects your package manager (via lockfile, `npm_config_user_agen
 - ✅ Removes ESLint and Prettier packages and configs
 - ✅ Installs oxlint with Standard Style configuration
 - ✅ Installs oxfmt formatter with Standard Style configuration
-- ✅ Updates your package.json scripts
+- ✅ Updates your package.json scripts (run with `npm run lint` / `pnpm lint` / `yarn lint` / `bun run lint`)
 - ✅ Configures VSCode settings and extensions
 
 ### For Deno Projects
 
-Run the setup in your Deno project directory:
+Run the setup in your Deno project directory (Deno doesn't ship a `dlx`-style runner, so use `npx`):
 
 ```bash
-npx ox-standard
+npx github:JohnDeved/ox-standard --type=deno
 ```
 
 ### Non-interactive / CI usage
@@ -44,9 +44,9 @@ npx ox-standard
 Pass `--yes` to auto-accept every prompt and `--type=` to skip detection. `--no-vscode` skips the VSCode integration step.
 
 ```bash
-npx ox-standard --yes --type=node --no-vscode
-npx ox-standard --yes --type=deno
-npx ox-standard --help
+npx github:JohnDeved/ox-standard --yes --type=node --no-vscode
+npx github:JohnDeved/ox-standard --yes --type=deno
+npx github:JohnDeved/ox-standard --help
 ```
 
 The setup will:
@@ -54,20 +54,16 @@ The setup will:
 - ✅ Detect your Deno project automatically
 - ✅ Create .oxlintrc.json with Deno-specific configuration
 - ✅ Create .oxfmtrc.json with Standard Style formatting
-- ✅ Add lint task to your deno.json
+- ✅ Add a `lint` task to your deno.json
 - ✅ Configure VSCode settings and extensions
 
-Then install oxlint and oxfmt:
+Then run linting and formatting via the generated task:
 
 ```bash
-# Using npx (recommended)
-npx oxlint --fix .
-npx oxfmt .
-
-# Or install globally with Deno
-deno install -A -n oxlint https://esm.sh/oxlint
-deno install -A -n oxfmt https://esm.sh/oxfmt
+deno task lint
 ```
+
+`oxlint` and `oxfmt` are invoked through `npx`, so Node.js needs to be installed alongside Deno.
 
 ## ✨ What You Get
 
@@ -139,11 +135,18 @@ The setup script handles everything automatically:
 
 ### Node.js Projects
 
-Prefer manual setup?
+Prefer manual setup? Pick the install command for your package manager:
 
 ```bash
-npm install --save-dev ox-standard
+npm  install --save-dev github:JohnDeved/ox-standard
+pnpm add     --save-dev github:JohnDeved/ox-standard
+yarn add     --dev      github:JohnDeved/ox-standard
+bun  add     --dev      github:JohnDeved/ox-standard
+```
 
+Then create the configs and lint script:
+
+```bash
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json
 
@@ -156,13 +159,9 @@ For Deno projects, configuration is embedded directly:
 
 ```bash
 # Run setup script
-npx JohnDeved/ox-standard
+npx github:JohnDeved/ox-standard --type=deno
 
-# Or manually create configs
-# The setup script will generate .oxlintrc.json with Deno-specific settings
-# including Deno global environment and optimized ignore patterns
-
-# Add to deno.json:
+# Or manually create the configs and add a task to deno.json:
 {
   "tasks": {
     "lint": "npx oxlint --fix . && npx oxfmt ."
