@@ -414,9 +414,17 @@ const installVSCodeExtensions = async (extensions: string[]): Promise<void> => {
   }
 }
 
+const getPackageRoot = (): string => {
+  // When running from dist/ (built or npm-installed), package assets like
+  // .vscode/ and .oxlintrc.json live one level up from the script. When
+  // running via tsx during dev, they live next to the source file.
+  const dir = path.dirname(__filename)
+  return path.basename(dir) === 'dist' ? path.dirname(dir) : dir
+}
+
 const getTemplateVSCodeConfig = () => {
   // Read template files from this package's .vscode directory
-  const packageRoot = path.dirname(__filename)
+  const packageRoot = getPackageRoot()
   const templateVSCodeDir = path.resolve(packageRoot, '.vscode')
 
   // Read template extensions.json
@@ -591,7 +599,7 @@ const buildNodeOxlintConfig = (): Record<string, unknown> => {
 }
 
 const buildDenoOxlintConfig = (): Record<string, unknown> => {
-  const baseConfigPath = path.resolve(path.dirname(__filename), '.oxlintrc.json')
+  const baseConfigPath = path.resolve(getPackageRoot(), '.oxlintrc.json')
   if (fs.existsSync(baseConfigPath)) return generateDenoConfig(baseConfigPath)
   console.warn('⚠️  Could not find base config. Creating basic Deno config.')
   return {

@@ -1,6 +1,6 @@
 {
   "name": "oxc-standard",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
   "keywords": [
     "deno",

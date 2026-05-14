@@ -167,4 +167,24 @@ describe('CLI: --dry-run', () => {
       expect(fs.readFileSync(path.join(tmp, 'package.json'), 'utf8')).toBe(initialPkg)
     })
   }, 60000)
+
+  it('reads .vscode/ template assets from package root, not dist/ (regression)', () => {
+    // Regression for a bug where getTemplateVSCodeConfig assumed assets sat
+    // next to the script; in the published layout they sit one level up
+    // because the script lives in dist/ and assets at the package root.
+    withTmp('ox-cli-vsc-', tmp => {
+      fs.writeFileSync(path.join(tmp, 'package.json'), JSON.stringify({ name: 'x' }))
+      fs.writeFileSync(path.join(tmp, 'package-lock.json'), '')
+      stageFakeOxStandard(tmp)
+
+      // No --no-vscode: this exercises getTemplateVSCodeConfig() which is
+      // what previously crashed with ENOENT against dist/.vscode/...
+      const r = runCli(['--dry-run', '--type=node'], tmp)
+
+      expect(r.code).toBe(0)
+      expect(r.stdout).not.toMatch(/ENOENT|no such file/i)
+      expect(r.stdout).toContain('[dry-run] would write .vscode/extensions.json')
+      expect(r.stdout).toContain('[dry-run] would write .vscode/settings.json')
+    })
+  }, 60000)
 })
