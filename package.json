@@ -2,10 +2,33 @@
   "name": "ox-standard",
   "version": "1.3.1",
   "description": "Fast, comprehensive TypeScript/React linting with JavaScript Standard Style philosophy using oxlint",
+  "keywords": [
+    "deno",
+    "eslint",
+    "formatter",
+    "lint",
+    "linter",
+    "oxc",
+    "oxfmt",
+    "oxlint",
+    "prettier",
+    "react",
+    "standard",
+    "typescript"
+  ],
+  "homepage": "https://github.com/JohnDeved/ox-standard#readme",
+  "bugs": {
+    "url": "https://github.com/JohnDeved/ox-standard/issues"
+  },
+  "license": "MIT",
   "author": "Johann Berger <johann@objekt.stream>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnDeved/ox-standard.git"
+  },
   "bin": {
-    "ox-standard": "./dist/setup-oxlint.js",
-    "setup-oxlint": "./dist/setup-oxlint.js"
+    "ox-standard": "dist/setup-oxlint.js",
+    "setup-oxlint": "dist/setup-oxlint.js"
   },
   "files": [
     ".oxlintrc.json",
@@ -13,6 +36,9 @@
     "dist/",
     ".vscode"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test:lint": "vitest run lint-test/all-lint-rules.test.ts",
     "format": "oxfmt .",
@@ -41,31 +67,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/JohnDeved/ox-standard#readme",
-  "bugs": {
-    "url": "https://github.com/JohnDeved/ox-standard/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/JohnDeved/ox-standard.git"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "keywords": [
-    "oxlint",
-    "oxfmt",
-    "oxc",
-    "lint",
-    "linter",
-    "formatter",
-    "eslint",
-    "prettier",
-    "standard",
-    "typescript",
-    "react",
-    "deno"
-  ]
+  }
 }
