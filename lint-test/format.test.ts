@@ -68,17 +68,14 @@ function test() {
 }
 export default test;`
 
-    const testFile = createTestFile('test-semicolons.js', code)
-    runOxfmtFormatWrite([testFile])
-    const formatted = fs.readFileSync(testFile, 'utf8')
+    const formatted = formatCode('test-semicolons.js', code)
 
     // Should remove semicolons and convert to single quotes
     expect(formatted).toMatch(/const message = 'Hello World'/)
     expect(formatted).toMatch(/const arr = \[1, 2, 3\]/)
     expect(formatted).toMatch(/return 'test'/)
     expect(formatted).toMatch(/export default test/)
-    // Should not have trailing semicolons on these lines
-    expect(formatted).not.toMatch(/const message = 'Hello World';/)
+    expect(formatted).not.toMatch(/;\s*$/m)
   })
 
   it('should convert double quotes to single quotes', () => {
