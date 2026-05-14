@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -88,6 +88,25 @@ export { testFunction }
     }
   })
 
+  const expectNoVarLintError = (command: string): void => {
+    try {
+      execSync(command, { cwd: testProjectDir, encoding: 'utf8' })
+      throw new Error('Expected oxlint to find issues')
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'stdout' in error) {
+        const output = JSON.parse((error as { stdout: string }).stdout)
+        expect(output).toHaveProperty('diagnostics')
+        expect(Array.isArray(output.diagnostics)).toBe(true)
+        const hasNoVarError = output.diagnostics.some(
+          (d: { code?: string }) => d.code === 'eslint(no-var)'
+        )
+        expect(hasNoVarError).toBe(true)
+      } else {
+        throw error
+      }
+    }
+  }
+
   it('should run in Deno environment and detect linting issues', () => {
     // Check if Deno is available
     let denoAvailable = false
@@ -98,51 +117,10 @@ export { testFunction }
       console.log('⚠️  Deno not available, skipping Deno-specific test')
     }
 
-    if (!denoAvailable) {
-      // If Deno is not available, just test with npx
-      try {
-        execSync('npx oxlint --format json test.ts', {
-          cwd: testProjectDir,
-          encoding: 'utf8',
-        })
-        throw new Error('Expected oxlint to find issues')
-      } catch (error: unknown) {
-        if (error && typeof error === 'object' && 'stdout' in error) {
-          const output = JSON.parse(error.stdout as string)
-          expect(output).toHaveProperty('diagnostics')
-          expect(Array.isArray(output.diagnostics)).toBe(true)
-
-          const hasNoVarError = output.diagnostics.some(
-            (d: { code?: string }) => d.code === 'eslint(no-var)'
-          )
-          expect(hasNoVarError).toBe(true)
-        } else {
-          throw error
-        }
-      }
-    } else {
-      // Test with Deno environment - use deno run to execute oxlint via npx
-      try {
-        execSync('deno run -A npm:oxlint --format json test.ts', {
-          cwd: testProjectDir,
-          encoding: 'utf8',
-        })
-        throw new Error('Expected oxlint to find issues')
-      } catch (error: unknown) {
-        if (error && typeof error === 'object' && 'stdout' in error) {
-          const output = JSON.parse(error.stdout as string)
-          expect(output).toHaveProperty('diagnostics')
-          expect(Array.isArray(output.diagnostics)).toBe(true)
-
-          const hasNoVarError = output.diagnostics.some(
-            (d: { code?: string }) => d.code === 'eslint(no-var)'
-          )
-          expect(hasNoVarError).toBe(true)
-        } else {
-          throw error
-        }
-      }
-    }
+    const command = denoAvailable
+      ? 'deno run -A npm:oxlint --format json test.ts'
+      : 'npx oxlint --format json test.ts'
+    expectNoVarLintError(command)
   })
 
   it('should fix linting issues in Deno environment', () => {

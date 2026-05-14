@@ -189,9 +189,9 @@ deno task lint
 - `self-closing-comp` - Concise components
 - `jsx-no-duplicate-props` - Catches duplicate prop bugs
 - `void-dom-elements-no-children` - No children on `<img>`, `<br>` etc.
-- `no-danger` *(warn)* - Flags `dangerouslySetInnerHTML`
-- `jsx-no-constructed-context-values` *(warn)* - Prevents needless re-renders
-- `react_perf/jsx-no-jsx-as-prop` *(warn)* - JSX in props causes re-renders
+- `no-danger` _(warn)_ - Flags `dangerouslySetInnerHTML`
+- `jsx-no-constructed-context-values` _(warn)_ - Prevents needless re-renders
+- `react_perf/jsx-no-jsx-as-prop` _(warn)_ - JSX in props causes re-renders
 
 ### TypeScript Integration
 
@@ -225,7 +225,7 @@ deno task lint
 ### Performance (Oxc)
 
 - `no-accumulating-spread` - Prevents O(n²) spread in loops
-- `no-map-spread` *(warn)* - Spread in map callbacks
+- `no-map-spread` _(warn)_ - Spread in map callbacks
 
 ### Import Safety
 

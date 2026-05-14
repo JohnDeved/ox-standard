@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -54,6 +54,12 @@ describe('oxfmt formatting with JavaScript Standard Style', () => {
     }
   }
 
+  const formatCode = (filename: string, code: string): string => {
+    const testFile = createTestFile(filename, code)
+    runOxfmtFormatWrite([testFile])
+    return fs.readFileSync(testFile, 'utf8')
+  }
+
   it('should remove unnecessary semicolons', () => {
     const code = `const message = "Hello World";
 const arr = [1, 2, 3];
@@ -80,9 +86,7 @@ export default test;`
 const template = "This is a \\"quoted\\" string"
 const obj = { "key": "value" }`
 
-    const testFile = createTestFile('test-quotes.js', code)
-    runOxfmtFormatWrite([testFile])
-    const formatted = fs.readFileSync(testFile, 'utf8')
+    const formatted = formatCode('test-quotes.js', code)
 
     expect(formatted).toMatch(/const message = 'Hello World'/)
     expect(formatted).toMatch(/const template = 'This is a "quoted" string'/)
@@ -104,9 +108,7 @@ const obj = { "key": "value" }`
     }
 }`
 
-    const testFile = createTestFile('test-indentation.js', code)
-    runOxfmtFormatWrite([testFile])
-    const formatted = fs.readFileSync(testFile, 'utf8')
+    const formatted = formatCode('test-indentation.js', code)
 
     // Check for 2-space indentation
     const lines = formatted.split('\n')
@@ -131,9 +133,7 @@ const fn3 = (x, y) => {
     return x + y;
 };`
 
-    const testFile = createTestFile('test-arrows.js', code)
-    runOxfmtFormatWrite([testFile])
-    const formatted = fs.readFileSync(testFile, 'utf8')
+    const formatted = formatCode('test-arrows.js', code)
 
     // Should use parentheses only when needed (oxfmt may differ from standard on this)
     expect(formatted).toMatch(/const fn1 = .* => .* \* 2/)
@@ -164,9 +164,7 @@ function testFunction( x,y ) {
 }
 export { testFunction,message };`
 
-    const testFile = createTestFile('test-complex.js', code)
-    runOxfmtFormatWrite([testFile])
-    const formatted = fs.readFileSync(testFile, 'utf8')
+    const formatted = formatCode('test-complex.js', code)
 
     // Should use single quotes
     expect(formatted).toMatch(/const message = 'Hello World'/)
