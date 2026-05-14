@@ -31,7 +31,7 @@ A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https:
 
 ## 🚀 Quick Setup
 
-> **Requirements:** Node.js 18+ for Node projects. Deno 2+ **and** Node.js for Deno projects (oxlint and oxfmt run through `npx`). The CLI itself runs from any package manager's `dlx`-style runner.
+> **Requirements:** Node.js (a recent LTS — oxlint and oxfmt need at least Node 18). For Deno projects, you also need Node alongside Deno because `oxlint` and `oxfmt` are invoked through `npx`. The CLI itself runs from any package manager's `dlx`-style runner.
 
 ### Node.js Projects
 
@@ -168,7 +168,6 @@ A typical `package.json` diff after migration:
 ```diff
   "scripts": {
 -   "lint": "eslint . --fix",
--   "format": "prettier --write ."
 +   "lint": "oxlint --fix .; oxfmt ."
   },
   "devDependencies": {
@@ -180,6 +179,8 @@ A typical `package.json` diff after migration:
 +   "oxlint": "^1.63.0"
   }
 ```
+
+> The script only touches `scripts.lint`. If you have a separate `scripts.format` calling `prettier --write`, you'll want to remove it manually — `oxfmt` already runs as part of `lint`.
 
 ---
 
