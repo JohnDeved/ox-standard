@@ -1,8 +1,11 @@
 # ox-standard
 
-**Lightning-fast JavaScript Standard Style linting and formatting** ⚡
+**Lightning-fast [JavaScript Standard Style](https://standardjs.com/) linting and formatting** ⚡
 
-Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster. Enforces [JavaScript Standard Style](https://standardjs.com/) using Rust-based oxlint and oxfmt formatter for TypeScript/React projects.
+[![CI](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml/badge.svg)](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#-license)
+
+A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https://oxc.rs/) toolchain. Roughly [50–100×](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster than the JavaScript equivalents, with a curated 113-rule preset for TypeScript and React.
 
 <div align="center">
   <a href="https://standardjs.com/">
@@ -10,9 +13,27 @@ Drop-in replacement for ESLint/Prettier that's [50~100 times](https://voidzero.d
   </a>
 </div>
 
+---
+
+## Contents
+
+- [Quick Setup](#-quick-setup)
+- [CLI Reference](#-cli-reference)
+- [What You Get](#-what-you-get)
+- [Customization](#-customization)
+- [VSCode Integration](#-vscode-integration)
+- [Migrating from ESLint/Prettier](#-migrating-from-eslintprettier)
+- [Manual Installation](#-manual-installation)
+- [Rule Reference](#-rule-reference)
+- [Contributing](#-contributing)
+
+---
+
 ## 🚀 Quick Setup
 
-### For Node.js Projects
+> **Requirements:** Node.js 18+ for Node projects. Deno 2+ **and** Node.js for Deno projects (oxlint and oxfmt run through `npx`). The CLI itself runs from any package manager's `dlx`-style runner.
+
+### Node.js Projects
 
 Replace ESLint/Prettier in your project with one command — works with **npm, pnpm, yarn, and bun**:
 
@@ -23,82 +44,88 @@ yarn dlx github:JohnDeved/ox-standard     # yarn (berry)
 bunx github:JohnDeved/ox-standard         # bun
 ```
 
-The setup auto-detects your package manager (via lockfile, `npm_config_user_agent`, or the `packageManager` field in `package.json`) and uses the right install/uninstall commands for it. It then:
+The setup auto-detects your package manager (via lockfile, then `npm_config_user_agent`, then the `packageManager` field in `package.json`) and uses the right install/uninstall commands. It then:
 
-- ✅ Removes ESLint and Prettier packages and configs
-- ✅ Installs oxlint with Standard Style configuration
-- ✅ Installs oxfmt formatter with Standard Style configuration
-- ✅ Updates your package.json scripts (run with `npm run lint` / `pnpm lint` / `yarn lint` / `bun run lint`)
-- ✅ Configures VSCode settings and extensions
+- ✅ Removes ESLint, Prettier, and related packages and configs
+- ✅ Installs `oxlint` and `oxfmt` pinned to known-good versions
+- ✅ Writes `.oxlintrc.json` and `.oxfmtrc.json`
+- ✅ Adds a `lint` script to `package.json` — run with `npm run lint` / `pnpm lint` / `yarn lint` / `bun run lint`
+- ✅ Configures `.vscode/settings.json` and `.vscode/extensions.json` for the [oxc-vscode](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) extension
 
-### For Deno Projects
+### Deno Projects
 
-Run the setup in your Deno project directory (Deno doesn't ship a `dlx`-style runner, so use `npx`):
+Deno doesn't ship a `dlx`-style runner, so use `npx` (Node must be installed alongside Deno):
 
 ```bash
 npx github:JohnDeved/ox-standard --type=deno
 ```
 
-### Non-interactive / CI usage
-
-Pass `--yes` to auto-accept every prompt and `--type=` to skip detection. `--no-vscode` skips the VSCode integration step.
-
-```bash
-npx github:JohnDeved/ox-standard --yes --type=node --no-vscode
-npx github:JohnDeved/ox-standard --yes --type=deno
-npx github:JohnDeved/ox-standard --help
-```
-
 The setup will:
 
-- ✅ Detect your Deno project automatically
-- ✅ Create .oxlintrc.json with Deno-specific configuration
-- ✅ Create .oxfmtrc.json with Standard Style formatting
-- ✅ Add a `lint` task to your deno.json
-- ✅ Configure VSCode settings and extensions
+- ✅ Detect your Deno project (via `deno.json[c]` or `.vscode/settings.json` `deno.enable`)
+- ✅ Write `.oxlintrc.json` with Deno-specific globals and ignore patterns
+- ✅ Write `.oxfmtrc.json` with Standard Style formatting
+- ✅ Add a `lint` task to `deno.json`
+- ✅ Configure VSCode integration
 
-Then run linting and formatting via the generated task:
+Then run:
 
 ```bash
 deno task lint
 ```
 
-`oxlint` and `oxfmt` are invoked through `npx`, so Node.js needs to be installed alongside Deno.
+---
+
+## 📋 CLI Reference
+
+```
+npx github:JohnDeved/ox-standard [options]
+```
+
+| Flag | Description |
+| --- | --- |
+| `-y`, `--yes` | Skip every confirmation prompt (CI / scripted use). |
+| `-t`, `--type=<node\|deno>` | Skip auto-detection and force the project type. |
+| `--no-vscode` | Skip the `.vscode/` integration step. |
+| `-h`, `--help` | Print the help text and exit. |
+
+Examples:
+
+```bash
+# Fully non-interactive Node setup (e.g. inside a CI job)
+npx github:JohnDeved/ox-standard --yes --type=node --no-vscode
+
+# Non-interactive Deno setup
+npx github:JohnDeved/ox-standard --yes --type=deno
+```
+
+---
 
 ## ✨ What You Get
 
-### 🚀 100x Faster Performance
+- **Sub-second linting and formatting** — `oxlint` and `oxfmt` are native Rust binaries shipped via npm.
+- **One command for both** — the generated lint script runs `oxlint --fix .` followed by `oxfmt .` (semicolon, not `&&`, so formatting still runs even if lint reports an unfixable issue).
+- **Standard Style enforced** — no semicolons, single quotes, 2-space indent, strict equality, modern ES6+, React-hooks correctness, TypeScript consistency.
+- **Pinned tool versions** — `ox-standard` declares the supported `oxlint` and `oxfmt` versions in both `dependencies` and `peerDependencies`, so the toolchain stays in sync with the rule set.
+- **VSCode integration on by default** — auto-fix and format-on-save via the official `oxc.oxc-vscode` extension.
 
-- **Rust-based oxlint**: Sub-second linting even on large codebases
-- **oxfmt formatter**: Lightning-fast formatting from the oxc ecosystem
-- **Single command**: `npm run lint` (Node.js) or `deno task lint` (Deno) handles both linting and formatting
-
-### 📏 JavaScript Standard Style Enforced
-
-- No semicolons, single quotes, 2-space indentation
-- Strict equality (`===`), modern ES6+ patterns
-- React hooks best practices, TypeScript consistency
-
-### 🎯 Zero Configuration
-
-- Works out of the box for TypeScript and React
-- Supports both Node.js and Deno projects
-- Extensible configs you can customize
-- VSCode integration with recommended extensions
+---
 
 ## 🛠 Customization
 
-Need to override rules? Easy:
+Override individual rules by extending the bundled config:
 
 ```jsonc
 // .oxlintrc.json
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
   "rules": {
-    "no-console": "warn",
-  },
+    "no-console": "warn"
+  }
 }
 ```
+
+Tweak formatting:
 
 ```jsonc
 // .oxfmtrc.json
@@ -107,35 +134,58 @@ Need to override rules? Easy:
   "semi": false,
   "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5",
+  "trailingComma": "es5"
 }
 ```
 
+---
+
 ## 💡 VSCode Integration
 
-The setup automatically configures VSCode for the best experience:
+The setup writes:
 
-- **Auto-formatting on save** with oxfmt via the oxc-vscode extension
-- **Auto-fixing** linting issues on save
-- **Recommended extensions** installation prompt
+- **`.vscode/settings.json`** — sets `oxc-vscode` as the default formatter, enables format-on-save, enables auto-fix-on-save, and turns on the experimental oxfmt support.
+- **`.vscode/extensions.json`** — recommends `oxc.oxc-vscode` (and `typescriptteam.native-preview`).
 
-The `.vscode/settings.json` is configured to use oxc-vscode as the default formatter with experimental oxfmt support enabled. Just install the recommended `oxc.oxc-vscode` extension when prompted, and formatting will work out of the box!
+When you open the project, VSCode will offer to install the recommended extensions. Accept, and lint + format on save just works.
 
-## 🆚 Migrating from ESLint/Prettier?
+Skip this step entirely with `--no-vscode`.
 
-The setup script handles everything automatically:
+---
 
-1. Detects existing ESLint/Prettier configs and packages
-2. Prompts for removal confirmation
-3. Uninstalls old dependencies
-4. Installs and configures ox-standard
-5. Updates VSCode settings
+## 🆚 Migrating from ESLint/Prettier
+
+Run `npx github:JohnDeved/ox-standard` and confirm the prompts. The script will:
+
+1. Detect existing ESLint/Prettier configs (`.eslintrc*`, `eslint.config.*`, `.prettierrc*`, `prettier.config.*`) and packages (`eslint`, `prettier`, common plugins/configs).
+2. Ask before deleting configs.
+3. Uninstall the legacy packages with your package manager.
+4. Install and configure `ox-standard`.
+5. Update `.vscode/` (unless `--no-vscode`).
+
+A typical `package.json` diff after migration:
+
+```diff
+  "scripts": {
+-   "lint": "eslint . --fix",
+-   "format": "prettier --write ."
++   "lint": "oxlint --fix .; oxfmt ."
+  },
+  "devDependencies": {
+-   "eslint": "^9.0.0",
+-   "eslint-config-standard": "^17.0.0",
+-   "prettier": "^3.0.0",
++   "ox-standard": "github:JohnDeved/ox-standard",
++   "oxfmt": "^0.48.0",
++   "oxlint": "^1.63.0"
+  }
+```
+
+---
 
 ## 📖 Manual Installation
 
-### Node.js Projects
-
-Prefer manual setup? Pick the install command for your package manager:
+Prefer to skip the script? Pick the install command for your package manager:
 
 ```bash
 npm  install --save-dev github:JohnDeved/ox-standard
@@ -144,39 +194,36 @@ yarn add     --dev      github:JohnDeved/ox-standard
 bun  add     --dev      github:JohnDeved/ox-standard
 ```
 
-Then create the configs and lint script:
+### Node.js
 
 ```bash
 echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
 cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json
-
 npm pkg set scripts.lint="oxlint --fix .; oxfmt ."
 ```
 
-### Deno Projects
+### Deno
 
-For Deno projects, configuration is embedded directly:
+Add a task to `deno.json`:
 
-```bash
-# Run setup script
-npx github:JohnDeved/ox-standard --type=deno
-
-# Or manually create the configs and add a task to deno.json:
+```jsonc
 {
   "tasks": {
     "lint": "npx oxlint --fix . && npx oxfmt ."
   }
 }
-
-# Run linting
-deno task lint
 ```
 
-## 🔧 Complete Rule Reference
+Then run `deno task lint`.
 
-100+ carefully selected rules across:
+---
 
-### JavaScript Standard Style
+## 🔧 Rule Reference
+
+113 carefully selected rules across 5 oxlint plugins (`unicorn`, `typescript`, `oxc`, `react`, `react_perf`). The full list lives in [`.oxlintrc.json`](./.oxlintrc.json); the highlights are below.
+
+<details>
+<summary><b>JavaScript Standard Style</b></summary>
 
 - `eqeqeq` - Strict equality (`===`)
 - `curly` - Consistent braces
@@ -187,14 +234,20 @@ deno task lint
 - `no-self-compare` - Flags `x === x` tautologies
 - `no-else-return` - Removes redundant else after return
 
-### Modern JavaScript
+</details>
+
+<details>
+<summary><b>Modern JavaScript</b></summary>
 
 - `prefer-template` - Template literals
 - `prefer-destructuring` - Modern patterns
 - `prefer-object-spread` - Clean objects
 - `no-duplicate-imports` - Organized imports
 
-### React Best Practices
+</details>
+
+<details>
+<summary><b>React Best Practices</b></summary>
 
 - `rules-of-hooks` - Proper hooks usage
 - `jsx-curly-brace-presence` - Clean JSX
@@ -205,7 +258,10 @@ deno task lint
 - `jsx-no-constructed-context-values` _(warn)_ - Prevents needless re-renders
 - `react_perf/jsx-no-jsx-as-prop` _(warn)_ - JSX in props causes re-renders
 
-### TypeScript Integration
+</details>
+
+<details>
+<summary><b>TypeScript Integration</b></summary>
 
 - `consistent-type-imports` - Clean imports
 - `array-type` - Consistent syntax
@@ -217,7 +273,10 @@ deno task lint
 - `no-duplicate-enum-values` / `no-mixed-enums` - Enum correctness guards
 - `no-unsafe-declaration-merging` - Class+interface merge safety
 
-### Enhanced Patterns (Unicorn)
+</details>
+
+<details>
+<summary><b>Enhanced Patterns (Unicorn)</b></summary>
 
 - `prefer-includes` - Better array methods
 - `prefer-string-starts-ends-with` - Modern strings
@@ -234,18 +293,35 @@ deno task lint
 - `no-negation-in-equality-check` - `!!x === y` instead of `!x === y`
 - `require-array-join-separator` - Explicit separator in `.join()`
 
-### Performance (Oxc)
+</details>
+
+<details>
+<summary><b>Performance (Oxc) &amp; Import Safety</b></summary>
 
 - `no-accumulating-spread` - Prevents O(n²) spread in loops
 - `no-map-spread` _(warn)_ - Spread in map callbacks
-
-### Import Safety
-
 - `import/no-cycle` - Detects circular imports
+
+</details>
+
+---
 
 ## 🤝 Contributing
 
 Found an issue or want to suggest improvements? [Open an issue](https://github.com/JohnDeved/ox-standard/issues) or submit a pull request.
+
+Local development:
+
+```bash
+npm install
+npm run build       # tsc → dist/
+npm test            # vitest
+npm run lint        # dogfood: lint this repo with oxlint+oxfmt
+```
+
+CI runs the full test suite on Node 20 and 22 across Linux and macOS, plus a smoke test of the setup CLI against npm, pnpm, yarn, bun, and Deno.
+
+---
 
 ## 📄 License
 
