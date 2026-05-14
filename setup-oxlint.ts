@@ -558,15 +558,37 @@ const uninstallLegacyPackagesOrAbort = async (
   }
 }
 
+const readOwnPackage = (): { dependencies?: Record<string, string> } => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(getPackageRoot(), 'package.json'), 'utf8')) as {
+      dependencies?: Record<string, string>
+    }
+  } catch {
+    return {}
+  }
+}
+
 const installOxStandard = (pm: PackageManager): void => {
   console.log(`Installing oxc-standard via ${pm}...`)
   try {
-    // Pull from npm registry. Pin to ^1 so users get patches/features but not
-    // future breaking changes. The 'name@spec' form keeps yarn berry happy
-    // without an explicit approvedGitRepositories entry.
-    const spec = 'oxc-standard@^1'
-    execSafe(PACKAGE_MANAGERS[pm].installDevSaved([spec]))
-    console.log('✓ Installed oxc-standard')
+    // Install oxlint and oxfmt as direct user devDeps in addition to
+    // oxc-standard itself. They're already transitive deps (and peerDeps) of
+    // oxc-standard, but npm's bin-hoisting is best-effort — when version
+    // conflicts with other top-level deps prevent hoisting, the bare
+    // `oxlint`/`oxfmt` invocations in the generated lint script can't find
+    // the binaries (`oxfmt: command not found`). Pinning them as direct
+    // devDeps guarantees node_modules/.bin/oxlint and .bin/oxfmt exist.
+    //
+    // Version ranges are sourced from oxc-standard's own package.json so the
+    // three specs always stay in lockstep — no second place to update.
+    const ownDeps = readOwnPackage().dependencies ?? {}
+    const specs = [
+      'oxc-standard@^1',
+      `oxlint@${ownDeps.oxlint ?? '^1'}`,
+      `oxfmt@${ownDeps.oxfmt ?? '^0.48'}`,
+    ]
+    execSafe(PACKAGE_MANAGERS[pm].installDevSaved(specs))
+    console.log('✓ Installed oxc-standard, oxlint, oxfmt')
   } catch {
     console.error('❌ Failed to install oxc-standard')
     process.exit(1)

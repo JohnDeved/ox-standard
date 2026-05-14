@@ -157,6 +157,9 @@ describe('CLI: --dry-run', () => {
       expect(r.stdout).toContain('[dry-run] would write .oxlintrc.json')
       expect(r.stdout).toContain('[dry-run] would write .oxfmtrc.json')
       expect(r.stdout).toContain('[dry-run] would run: npm install')
+      // 1.4.0 fix: oxlint and oxfmt are installed as direct devDeps too,
+      // not just transitively, to guarantee node_modules/.bin/ contains them.
+      expect(r.stdout).toMatch(/\[dry-run\] would run: npm install --save-dev .*oxc-standard@\^1.* oxlint@.* oxfmt@/)
       expect(r.stdout).toContain('[dry-run] would run: npm pkg set scripts.lint')
 
       // Nothing actually written
