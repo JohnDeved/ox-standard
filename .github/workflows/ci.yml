@@ -97,6 +97,9 @@ jobs:
             cat > .yarnrc.yml <<'YAMLEOF'
           enableHardenedMode: false
           enableImmutableInstalls: false
+          enableScripts: false
+          approvedGitRepositories:
+            - "https://github.com/JohnDeved/ox-standard.git"
           YAMLEOF
           fi
 
