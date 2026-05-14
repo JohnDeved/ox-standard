@@ -98,9 +98,9 @@ interface CliOptions {
 
 class CliArgError extends Error {}
 
-const HELP_TEXT = `ox-standard — set up oxlint + oxfmt with JavaScript Standard Style
+const HELP_TEXT = `oxc-standard — set up oxlint + oxfmt with JavaScript Standard Style
 
-Usage: npx ox-standard [options]
+Usage: npx oxc-standard [options]
 
 Options:
   -y, --yes              Non-interactive mode. Auto-accept every prompt
@@ -551,16 +551,18 @@ const uninstallLegacyPackagesOrAbort = async (
 }
 
 const installOxStandard = (pm: PackageManager): void => {
-  console.log(`Installing ox-standard via ${pm}...`)
+  console.log(`Installing oxc-standard via ${pm}...`)
   try {
-    // Use the GitHub install spec until the package is published to npm.
-    // The "name@spec" alias form works for npm, pnpm, bun, and yarn berry —
-    // yarn berry requires it; the others accept it.
-    const spec = 'ox-standard@github:JohnDeved/ox-standard'
+    // The "name@spec" alias form lets yarn berry accept this without an
+    // explicit `approvedGitRepositories` entry; npm/pnpm/bun also accept it.
+    // npm reads the repo's package.json (name: "oxc-standard") and installs
+    // into node_modules/oxc-standard. Once the package is on npm registry,
+    // this can be simplified to 'oxc-standard@^1'.
+    const spec = 'oxc-standard@github:JohnDeved/ox-standard'
     execSafe(PACKAGE_MANAGERS[pm].installDevSaved([spec]))
-    console.log('✓ Installed ox-standard')
+    console.log('✓ Installed oxc-standard')
   } catch {
-    console.error('❌ Failed to install ox-standard')
+    console.error('❌ Failed to install oxc-standard')
     process.exit(1)
   }
 }
@@ -585,7 +587,7 @@ const setupDenoProject = (): void => {
 const buildNodeOxlintConfig = (): Record<string, unknown> => {
   const reactMajor = detectReactMajorVersion(path.resolve(process.cwd(), 'package.json'))
   return {
-    extends: ['./node_modules/ox-standard/.oxlintrc.json'],
+    extends: ['./node_modules/oxc-standard/.oxlintrc.json'],
     ...(reactMajor ? { settings: { react: { version: reactMajor } } } : {}),
   }
 }
@@ -610,7 +612,7 @@ const createOxlintConfig = (projectType: ProjectType): void => {
   writeFileSafe(oxlintrcPath, JSON.stringify(config, undefined, 2))
   const label =
     projectType === 'node'
-      ? 'extending ox-standard config'
+      ? 'extending oxc-standard config'
       : 'with auto-generated Deno-specific configuration'
   console.log(`✓ Created .oxlintrc.json ${label}`)
 }

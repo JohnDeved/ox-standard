@@ -1,4 +1,4 @@
-# ox-standard
+# oxc-standard
 
 **Lightning-fast [JavaScript Standard Style](https://standardjs.com/) linting and formatting** ⚡
 
@@ -131,7 +131,7 @@ npx github:JohnDeved/ox-standard --dry-run --type=node
 - **Sub-second linting and formatting** — `oxlint` and `oxfmt` are native Rust binaries shipped via npm.
 - **One command for both** — the generated lint script runs `oxlint --fix .` followed by `oxfmt .` (semicolon, not `&&`, so formatting still runs even if lint reports an unfixable issue).
 - **Standard Style enforced** — no semicolons, single quotes, 2-space indent, strict equality, modern ES6+, React-hooks correctness, TypeScript consistency.
-- **Pinned tool versions** — `ox-standard` declares the supported `oxlint` and `oxfmt` versions in both `dependencies` and `peerDependencies`, so the toolchain stays in sync with the rule set.
+- **Pinned tool versions** — `oxc-standard` declares the supported `oxlint` and `oxfmt` versions in both `dependencies` and `peerDependencies`, so the toolchain stays in sync with the rule set.
 - **VSCode integration on by default** — auto-fix and format-on-save via the official `oxc.oxc-vscode` extension.
 
 ---
@@ -143,7 +143,7 @@ Override individual rules by extending the bundled config:
 ```jsonc
 // .oxlintrc.json
 {
-  "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
+  "extends": ["./node_modules/oxc-standard/.oxlintrc.json"],
   "rules": {
     "no-console": "warn",
   },
@@ -185,7 +185,7 @@ Run `npx github:JohnDeved/ox-standard` and confirm the prompts. The script will:
 1. Detect existing ESLint/Prettier configs (`.eslintrc*`, `eslint.config.*`, `.prettierrc*`, `prettier.config.*`) and packages (`eslint`, `prettier`, common plugins/configs).
 2. Ask before deleting configs.
 3. Uninstall the legacy packages with your package manager.
-4. Install and configure `ox-standard`.
+4. Install and configure `oxc-standard`.
 5. Update `.vscode/` (unless `--no-vscode`).
 
 A typical `package.json` diff after migration:
@@ -223,8 +223,8 @@ bun  add     --dev      github:JohnDeved/ox-standard
 ### Node.js
 
 ```bash
-echo '{"extends": ["./node_modules/ox-standard/.oxlintrc.json"]}' > .oxlintrc.json
-cp node_modules/ox-standard/.oxfmtrc.json .oxfmtrc.json
+echo '{"extends": ["./node_modules/oxc-standard/.oxlintrc.json"]}' > .oxlintrc.json
+cp node_modules/oxc-standard/.oxfmtrc.json .oxfmtrc.json
 npm pkg set scripts.lint="oxlint --fix .; oxfmt ."
 ```
 

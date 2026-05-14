@@ -43,7 +43,7 @@ describe('CLI: --help', () => {
     withTmp('ox-cli-', tmp => {
       const r = runCli(['--help'], tmp)
       expect(r.code).toBe(0)
-      expect(r.stdout).toContain('Usage: npx ox-standard')
+      expect(r.stdout).toContain('Usage: npx oxc-standard')
       expect(r.stdout).toContain('--yes')
       expect(r.stdout).toContain('--type')
     })
@@ -78,14 +78,14 @@ describe('CLI: argument validation', () => {
 })
 
 const stageFakeOxStandard = (tmp: string): void => {
-  fs.mkdirSync(path.join(tmp, 'node_modules', 'ox-standard'), { recursive: true })
+  fs.mkdirSync(path.join(tmp, 'node_modules', 'oxc-standard'), { recursive: true })
   fs.writeFileSync(
-    path.join(tmp, 'node_modules', 'ox-standard', '.oxlintrc.json'),
+    path.join(tmp, 'node_modules', 'oxc-standard', '.oxlintrc.json'),
     JSON.stringify({ env: { browser: true } })
   )
   fs.writeFileSync(
-    path.join(tmp, 'node_modules', 'ox-standard', 'package.json'),
-    JSON.stringify({ name: 'ox-standard', version: '0.3.0' })
+    path.join(tmp, 'node_modules', 'oxc-standard', 'package.json'),
+    JSON.stringify({ name: 'oxc-standard', version: '0.3.0' })
   )
 }
 
@@ -109,7 +109,7 @@ describe('CLI: full non-interactive node setup', () => {
       expect(fs.existsSync(path.join(tmp, '.oxfmtrc.json'))).toBe(true)
 
       const oxlintConfig = JSON.parse(fs.readFileSync(path.join(tmp, '.oxlintrc.json'), 'utf8'))
-      expect(oxlintConfig.extends).toEqual(['./node_modules/ox-standard/.oxlintrc.json'])
+      expect(oxlintConfig.extends).toEqual(['./node_modules/oxc-standard/.oxlintrc.json'])
 
       const oxfmtConfig = JSON.parse(fs.readFileSync(path.join(tmp, '.oxfmtrc.json'), 'utf8'))
       expect(oxfmtConfig).toMatchObject({

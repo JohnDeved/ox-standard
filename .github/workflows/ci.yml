@@ -126,8 +126,8 @@ jobs:
             }
             console.log("lint script:", pkg.scripts.lint);
           '
-          # ox-standard should be installed as a dep
-          test -d node_modules/ox-standard || (echo "ox-standard not installed" && exit 1)
+          # oxc-standard should be installed as a dep
+          test -d node_modules/oxc-standard || (echo "oxc-standard not installed" && exit 1)
           echo "✅ ${{ matrix.pm }} smoke test passed"
 
   smoke-deno:
