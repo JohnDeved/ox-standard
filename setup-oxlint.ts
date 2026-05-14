@@ -512,8 +512,9 @@ const installOxStandard = (pm: PackageManager): void => {
   console.log(`Installing ox-standard via ${pm}...`)
   try {
     // Use the GitHub install spec until the package is published to npm.
-    // npm/pnpm/bun all accept GitHub specs; yarn classic uses the same.
-    const spec = 'github:JohnDeved/ox-standard'
+    // The "name@spec" alias form works for npm, pnpm, bun, and yarn berry —
+    // yarn berry requires it; the others accept it.
+    const spec = 'ox-standard@github:JohnDeved/ox-standard'
     execSync(PACKAGE_MANAGERS[pm].installDevSaved([spec]), { stdio: 'inherit' })
     console.log('✓ Installed ox-standard')
   } catch {
