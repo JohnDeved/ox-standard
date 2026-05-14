@@ -47,7 +47,7 @@ const PACKAGE_MANAGERS: Record<PackageManager, PackageManagerCommands> = {
   },
 }
 
-const LOCKFILE_TO_PM: Array<[string, PackageManager]> = [
+const LOCKFILE_TO_PM: [string, PackageManager][] = [
   ['bun.lockb', 'bun'],
   ['bun.lock', 'bun'],
   ['pnpm-lock.yaml', 'pnpm'],
@@ -55,7 +55,7 @@ const LOCKFILE_TO_PM: Array<[string, PackageManager]> = [
   ['package-lock.json', 'npm'],
 ]
 
-const PM_PREFIXES: Array<[string, PackageManager]> = [
+const PM_PREFIXES: [string, PackageManager][] = [
   ['bun', 'bun'],
   ['pnpm', 'pnpm'],
   ['yarn', 'yarn'],
@@ -91,6 +91,7 @@ const detectPackageManager = (cwd: string = process.cwd()): PackageManager =>
 interface CliOptions {
   yes: boolean
   noVscode: boolean
+  dryRun: boolean
   typeOverride?: ProjectType
   showHelp?: boolean
 }
@@ -106,6 +107,9 @@ Options:
                          (remove old configs, uninstall ESLint, install
                          missing VSCode extensions). Required for CI.
   -t, --type <node|deno> Skip project-type detection.
+  -n, --dry-run          Preview every destructive action (file writes,
+                         deletes, package installs, script edits) without
+                         touching anything. Implies --yes.
   --no-vscode            Skip VSCode integration step.
   -h, --help             Show this help.
 `
@@ -118,20 +122,58 @@ const parseTypeArg = (value: string | undefined): ProjectType => {
 }
 
 const parseCliOptions = (argv: string[]): CliOptions => {
-  const opts: CliOptions = { yes: false, noVscode: false }
+  const opts: CliOptions = { yes: false, noVscode: false, dryRun: false }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (arg === '-y' || arg === '--yes') opts.yes = true
-    else if (arg === '--no-vscode') opts.noVscode = true
+    else if (arg === '-n' || arg === '--dry-run') {
+      opts.dryRun = true
+      opts.yes = true
+    } else if (arg === '--no-vscode') opts.noVscode = true
     else if (arg === '-h' || arg === '--help') opts.showHelp = true
     else if (arg === '-t' || arg === '--type') opts.typeOverride = parseTypeArg(argv[++i])
-    else if (arg.startsWith('--type=')) opts.typeOverride = parseTypeArg(arg.slice('--type='.length))
+    else if (arg.startsWith('--type='))
+      opts.typeOverride = parseTypeArg(arg.slice('--type='.length))
     else throw new CliArgError(`Unknown argument: ${arg}`)
   }
   return opts
 }
 
-let cliOptions: CliOptions = { yes: false, noVscode: false }
+let cliOptions: CliOptions = { yes: false, noVscode: false, dryRun: false }
+
+const formatRel = (p: string): string => path.relative(process.cwd(), p) || p
+
+const writeFileSafe = (filePath: string, data: string): void => {
+  if (cliOptions.dryRun) {
+    console.log(`  [dry-run] would write ${formatRel(filePath)} (${data.length} bytes)`)
+    return
+  }
+  fs.writeFileSync(filePath, data)
+}
+
+const rmSafe = (filePath: string): void => {
+  if (cliOptions.dryRun) {
+    console.log(`  [dry-run] would remove ${formatRel(filePath)}`)
+    return
+  }
+  fs.rmSync(filePath)
+}
+
+const mkdirSafe = (dirPath: string): void => {
+  if (cliOptions.dryRun) {
+    console.log(`  [dry-run] would create directory ${formatRel(dirPath)}`)
+    return
+  }
+  fs.mkdirSync(dirPath)
+}
+
+const execSafe = (cmd: string): void => {
+  if (cliOptions.dryRun) {
+    console.log(`  [dry-run] would run: ${cmd}`)
+    return
+  }
+  execSync(cmd, { stdio: 'inherit' })
+}
 
 const isInteractive = (): boolean => Boolean(process.stdin.isTTY) && !cliOptions.yes
 
@@ -364,7 +406,7 @@ const installVSCodeExtensions = async (extensions: string[]): Promise<void> => {
   for (const extension of extensions) {
     try {
       console.log(`  Installing ${extension}...`)
-      execSync(`code --install-extension ${extension}`, { stdio: 'inherit' })
+      execSafe(`code --install-extension ${extension}`)
       console.log(`  ✓ Installed ${extension}`)
     } catch {
       console.log(`  ⚠️  Failed to install ${extension}`)
@@ -426,17 +468,17 @@ const writeVSCodeSettings = (
   const codeActions = settings['editor.codeActionsOnSave'] as Record<string, unknown> | undefined
   if (codeActions) delete codeActions['source.fixAll.eslint']
 
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, undefined, 2))
+  writeFileSafe(settingsPath, JSON.stringify(settings, undefined, 2))
   console.log('✓ Updated .vscode/settings.json with JavaScript Standard Style preferences')
 }
 
 const setupVSCode = async (): Promise<void> => {
   const vscodeDir = path.resolve(process.cwd(), '.vscode')
-  if (!fs.existsSync(vscodeDir)) fs.mkdirSync(vscodeDir)
+  if (!fs.existsSync(vscodeDir)) mkdirSafe(vscodeDir)
 
   const { templateExtensions, templateSettings } = getTemplateVSCodeConfig()
 
-  fs.writeFileSync(
+  writeFileSafe(
     path.resolve(vscodeDir, 'extensions.json'),
     JSON.stringify(templateExtensions, undefined, 2)
   )
@@ -459,7 +501,7 @@ const removeExistingConfigFilesOrAbort = async (): Promise<void> => {
     process.exit(1)
   }
   for (const f of found) {
-    fs.rmSync(path.resolve(process.cwd(), f))
+    rmSafe(path.resolve(process.cwd(), f))
     console.log('✓ Removed', f)
   }
 }
@@ -468,7 +510,7 @@ const ensurePackageJson = (packageJsonPath: string, pm: PackageManager): void =>
   if (fs.existsSync(packageJsonPath)) return
   console.log(`No package.json found. Initializing project with ${pm}...`)
   try {
-    execSync(PACKAGE_MANAGERS[pm].init, { stdio: 'inherit' })
+    execSafe(PACKAGE_MANAGERS[pm].init)
     console.log('✓ Created package.json')
   } catch {
     console.error('❌ Failed to create package.json')
@@ -500,7 +542,7 @@ const uninstallLegacyPackagesOrAbort = async (
     process.exit(1)
   }
   try {
-    execSync(PACKAGE_MANAGERS[pm].uninstall(installed), { stdio: 'inherit' })
+    execSafe(PACKAGE_MANAGERS[pm].uninstall(installed))
     console.log('✓ Uninstalled packages:', installed.join(', '))
   } catch {
     console.error('❌ Failed to uninstall some packages. Please check manually.')
@@ -515,7 +557,7 @@ const installOxStandard = (pm: PackageManager): void => {
     // The "name@spec" alias form works for npm, pnpm, bun, and yarn berry —
     // yarn berry requires it; the others accept it.
     const spec = 'ox-standard@github:JohnDeved/ox-standard'
-    execSync(PACKAGE_MANAGERS[pm].installDevSaved([spec]), { stdio: 'inherit' })
+    execSafe(PACKAGE_MANAGERS[pm].installDevSaved([spec]))
     console.log('✓ Installed ox-standard')
   } catch {
     console.error('❌ Failed to install ox-standard')
@@ -565,7 +607,7 @@ const createOxlintConfig = (projectType: ProjectType): void => {
     return
   }
   const config = projectType === 'node' ? buildNodeOxlintConfig() : buildDenoOxlintConfig()
-  fs.writeFileSync(oxlintrcPath, JSON.stringify(config, undefined, 2))
+  writeFileSafe(oxlintrcPath, JSON.stringify(config, undefined, 2))
   const label =
     projectType === 'node'
       ? 'extending ox-standard config'
@@ -579,7 +621,7 @@ const createOxfmtConfig = (): void => {
     console.log('⚠️  .oxfmtrc.json already exists, skipping creation.')
     return
   }
-  fs.writeFileSync(
+  writeFileSafe(
     oxfmtPath,
     JSON.stringify(
       {
@@ -599,7 +641,7 @@ const createOxfmtConfig = (): void => {
 
 const addNodeLintScript = (): void => {
   try {
-    execSync('npm pkg set scripts.lint="oxlint --fix .; oxfmt ."', { stdio: 'inherit' })
+    execSafe('npm pkg set scripts.lint="oxlint --fix .; oxfmt ."')
     console.log('✓ Added lint script to package.json')
   } catch {
     console.warn('⚠️  Could not update package.json scripts')
@@ -627,7 +669,7 @@ const addDenoLintTask = (): void => {
     }
     if (!denoConfig.tasks) denoConfig.tasks = {}
     ;(denoConfig.tasks as Record<string, string>).lint = 'npx oxlint --fix . && npx oxfmt .'
-    fs.writeFileSync(configPath, JSON.stringify(denoConfig, null, 2))
+    writeFileSafe(configPath, JSON.stringify(denoConfig, null, 2))
     console.log(`✓ Added lint task to ${path.basename(configPath)}`)
   } catch (error) {
     console.warn('⚠️  Could not update deno config:', error)
@@ -651,6 +693,9 @@ const printNextSteps = (projectType: ProjectType): void => {
 }
 
 const printIntro = (projectType: ProjectType): void => {
+  if (cliOptions.dryRun) {
+    console.log('\n🧪 Dry-run mode — no files will be written, no commands will be run.\n')
+  }
   if (projectType === 'deno') {
     console.log('\n🦕 Setting up oxlint for Deno project with JavaScript Standard Style...\n')
   } else {

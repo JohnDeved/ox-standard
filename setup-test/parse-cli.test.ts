@@ -3,7 +3,7 @@ import { parseCliOptions, parseTypeArg, parseReactMajor, CliArgError } from '../
 
 describe('parseCliOptions', () => {
   it('returns defaults for no args', () => {
-    expect(parseCliOptions([])).toEqual({ yes: false, noVscode: false })
+    expect(parseCliOptions([])).toEqual({ yes: false, noVscode: false, dryRun: false })
   })
 
   it('parses --yes and -y', () => {
@@ -32,7 +32,12 @@ describe('parseCliOptions', () => {
 
   it('combines flags', () => {
     const opts = parseCliOptions(['--yes', '--type=deno', '--no-vscode'])
-    expect(opts).toEqual({ yes: true, noVscode: true, typeOverride: 'deno' })
+    expect(opts).toEqual({ yes: true, noVscode: true, dryRun: false, typeOverride: 'deno' })
+  })
+
+  it('parses --dry-run / -n and forces yes', () => {
+    expect(parseCliOptions(['--dry-run'])).toEqual({ yes: true, noVscode: false, dryRun: true })
+    expect(parseCliOptions(['-n'])).toEqual({ yes: true, noVscode: false, dryRun: true })
   })
 
   it('throws CliArgError on unknown flag', () => {

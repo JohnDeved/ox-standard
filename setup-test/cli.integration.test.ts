@@ -140,3 +140,31 @@ describe('CLI: --no-vscode actually skips .vscode', () => {
     })
   }, 60000)
 })
+
+describe('CLI: --dry-run', () => {
+  it('previews actions but writes no files and runs no commands', () => {
+    withTmp('ox-cli-dry-', tmp => {
+      const initialPkg = JSON.stringify({ name: 'dry-fixture', version: '0.0.0' })
+      fs.writeFileSync(path.join(tmp, 'package.json'), initialPkg)
+      // pre-stage so detectPackageManager picks npm deterministically
+      fs.writeFileSync(path.join(tmp, 'package-lock.json'), '')
+      stageFakeOxStandard(tmp)
+
+      const r = runCli(['--dry-run', '--type=node', '--no-vscode'], tmp)
+
+      expect(r.code).toBe(0)
+      expect(r.stdout).toContain('Dry-run mode')
+      expect(r.stdout).toContain('[dry-run] would write .oxlintrc.json')
+      expect(r.stdout).toContain('[dry-run] would write .oxfmtrc.json')
+      expect(r.stdout).toContain('[dry-run] would run: npm install')
+      expect(r.stdout).toContain('[dry-run] would run: npm pkg set scripts.lint')
+
+      // Nothing actually written
+      expect(fs.existsSync(path.join(tmp, '.oxlintrc.json'))).toBe(false)
+      expect(fs.existsSync(path.join(tmp, '.oxfmtrc.json'))).toBe(false)
+      expect(fs.existsSync(path.join(tmp, '.vscode'))).toBe(false)
+      // package.json untouched
+      expect(fs.readFileSync(path.join(tmp, 'package.json'), 'utf8')).toBe(initialPkg)
+    })
+  }, 60000)
+})

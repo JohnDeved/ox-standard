@@ -111,7 +111,13 @@ describe('generateDenoConfig', () => {
       })
     )
     const result = generateDenoConfig(basePath)
-    expect(result.env).toEqual({ node: false, mocha: false, jest: false, browser: true, Deno: true })
+    expect(result.env).toEqual({
+      node: false,
+      mocha: false,
+      jest: false,
+      browser: true,
+      Deno: true,
+    })
     expect(result.globals).toEqual({ foo: 'readonly', Deno: 'readonly' })
     expect(result.rules).toEqual({ 'no-var': 'error' })
     cleanup()

@@ -103,12 +103,13 @@ The `--yes` flag auto-accepts every prompt (required for non-interactive shells)
 npx github:JohnDeved/ox-standard [options]
 ```
 
-| Flag | Description |
-| --- | --- |
-| `-y`, `--yes` | Skip every confirmation prompt (CI / scripted use). |
-| `-t`, `--type=<node\|deno>` | Skip auto-detection and force the project type. |
-| `--no-vscode` | Skip the `.vscode/` integration step. |
-| `-h`, `--help` | Print the help text and exit. |
+| Flag                        | Description                                                                                                           |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `-y`, `--yes`               | Skip every confirmation prompt (CI / scripted use).                                                                   |
+| `-t`, `--type=<node\|deno>` | Skip auto-detection and force the project type.                                                                       |
+| `-n`, `--dry-run`           | Preview every destructive action (file writes, deletes, package installs) without touching anything. Implies `--yes`. |
+| `--no-vscode`               | Skip the `.vscode/` integration step.                                                                                 |
+| `-h`, `--help`              | Print the help text and exit.                                                                                         |
 
 Examples:
 
@@ -118,6 +119,9 @@ npx github:JohnDeved/ox-standard --yes --type=node --no-vscode
 
 # Non-interactive Deno setup
 npx github:JohnDeved/ox-standard --yes --type=deno
+
+# Preview what setup would do without changing anything
+npx github:JohnDeved/ox-standard --dry-run --type=node
 ```
 
 ---
@@ -141,8 +145,8 @@ Override individual rules by extending the bundled config:
 {
   "extends": ["./node_modules/ox-standard/.oxlintrc.json"],
   "rules": {
-    "no-console": "warn"
-  }
+    "no-console": "warn",
+  },
 }
 ```
 
@@ -155,7 +159,7 @@ Tweak formatting:
   "semi": false,
   "printWidth": 120,
   "tabWidth": 2,
-  "trailingComma": "es5"
+  "trailingComma": "es5",
 }
 ```
 
@@ -231,8 +235,8 @@ Add a task to `deno.json`:
 ```jsonc
 {
   "tasks": {
-    "lint": "npx oxlint --fix . && npx oxfmt ."
-  }
+    "lint": "npx oxlint --fix . && npx oxfmt .",
+  },
 }
 ```
 
