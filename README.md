@@ -3,7 +3,6 @@
 **Lightning-fast [JavaScript Standard Style](https://standardjs.com/) linting and formatting** ⚡
 
 [![npm version](https://img.shields.io/npm/v/oxc-standard.svg)](https://www.npmjs.com/package/oxc-standard)
-[![npm downloads](https://img.shields.io/npm/dm/oxc-standard.svg)](https://www.npmjs.com/package/oxc-standard)
 [![CI](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml/badge.svg)](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#-license)
 
