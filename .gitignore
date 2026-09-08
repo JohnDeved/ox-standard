@@ -111,3 +111,6 @@ lint-test/test-*.tsx
 # Test project directory
 .test-deno-project/
 dist/
+
+# Local development assistant metadata
+.serena/

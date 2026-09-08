@@ -48,24 +48,26 @@
     "lint": "oxlint --fix .; oxfmt .",
     "fix": "npm run lint; npm run format",
     "build": "tsc && (printf '#!/usr/bin/env node\n'; tail -n +2 dist/setup-oxlint.js) > dist/setup-oxlint.js.tmp && mv dist/setup-oxlint.js.tmp dist/setup-oxlint.js && chmod +x dist/setup-oxlint.js",
-    "prepublishOnly": "npm run build && npm run lint && npx vitest run",
-    "test": "vitest run"
+    "prepublishOnly": "npm run check",
+    "test": "vitest run",
+    "lint:check": "oxlint .",
+    "check": "npm run build && npm run lint:check && npm run format:check && npm test"
   },
   "dependencies": {
-    "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0"
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
-    "tsx": "^4.21.0",
-    "typescript": "^5.6.0",
-    "vitest": "^4.1.5"
+    "@types/node": "^26.5.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
   },
   "peerDependencies": {
-    "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0"
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

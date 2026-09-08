@@ -4,8 +4,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const testFilename = fileURLToPath(import.meta.url)
+const testDirectory = path.dirname(testFilename)
 
 describe('VSCode extension auto-installation', () => {
   let testDir: string
@@ -13,7 +13,7 @@ describe('VSCode extension auto-installation', () => {
 
   beforeEach(() => {
     // Create temporary test directory
-    testDir = path.join(__dirname, '..', `temp-test-${Date.now()}`)
+    testDir = path.join(testDirectory, '..', `temp-test-${Date.now()}`)
     fs.mkdirSync(testDir, { recursive: true })
 
     // Save original PATH
@@ -36,7 +36,7 @@ describe('VSCode extension auto-installation', () => {
 
     // Import the functions we want to test
     // Note: We need to test the actual implementation
-    const setupScript = path.resolve(__dirname, '../setup-oxlint.ts')
+    const setupScript = path.resolve(testDirectory, '../setup-oxlint.ts')
     const scriptContent = fs.readFileSync(setupScript, 'utf8')
 
     // Verify the isVSCodeCliAvailable function exists in the script
@@ -56,7 +56,7 @@ describe('VSCode extension auto-installation', () => {
     // Run setup in the test directory
     try {
       execSync(
-        `cd ${testDir} && node --loader tsx ${path.resolve(__dirname, '../setup-oxlint.ts')}`,
+        `cd ${testDir} && node --loader tsx ${path.resolve(testDirectory, '../setup-oxlint.ts')}`,
         {
           stdio: 'pipe',
           encoding: 'utf8',
@@ -80,7 +80,7 @@ describe('VSCode extension auto-installation', () => {
 
   it('should handle async setupVSCode function correctly', async () => {
     // Verify the setup function is now async by checking the code
-    const setupScript = path.resolve(__dirname, '../setup-oxlint.ts')
+    const setupScript = path.resolve(testDirectory, '../setup-oxlint.ts')
     const scriptContent = fs.readFileSync(setupScript, 'utf8')
 
     // Should contain async/await pattern
@@ -90,7 +90,7 @@ describe('VSCode extension auto-installation', () => {
 
   it('should configure VSCode settings with oxfmt formatter support', () => {
     // Check that the template settings include oxfmt configuration
-    const vscodeDir = path.resolve(__dirname, '..', '.vscode')
+    const vscodeDir = path.resolve(testDirectory, '..', '.vscode')
     const settingsFile = path.join(vscodeDir, 'settings.json')
 
     expect(fs.existsSync(settingsFile)).toBe(true)

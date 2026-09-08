@@ -4,8 +4,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const testFilename = fileURLToPath(import.meta.url)
+const testDirectory = path.dirname(testFilename)
 
 interface OxfmtConfig {
   singleQuote?: boolean
@@ -19,7 +19,7 @@ describe('oxfmt formatting with JavaScript Standard Style', () => {
   let testFiles: string[] = []
 
   const createTestFile = (filename: string, content: string): string => {
-    const filePath = path.resolve(__dirname, filename)
+    const filePath = path.resolve(testDirectory, filename)
     fs.writeFileSync(filePath, content)
     testFiles.push(filePath)
     return filePath
@@ -37,9 +37,9 @@ describe('oxfmt formatting with JavaScript Standard Style', () => {
 
   const runOxfmtFormatWrite = (files: string[]): void => {
     try {
-      const command = `cd ${path.resolve(__dirname, '..')} && npx oxfmt ${files.join(' ')}`
+      const command = `cd ${path.resolve(testDirectory, '..')} && npx oxfmt ${files.join(' ')}`
       execSync(command, {
-        cwd: path.resolve(__dirname, '..'),
+        cwd: path.resolve(testDirectory, '..'),
         encoding: 'utf8',
         shell: '/bin/bash',
       })
@@ -140,7 +140,7 @@ const fn3 = (x, y) => {
   })
 
   it('should check if oxfmt configuration is valid', () => {
-    const configPath = path.resolve(__dirname, '../.oxfmtrc.json')
+    const configPath = path.resolve(testDirectory, '../.oxfmtrc.json')
     expect(fs.existsSync(configPath)).toBe(true)
 
     const config: OxfmtConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))

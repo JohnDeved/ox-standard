@@ -1,5 +1,5 @@
 {
-  "plugins": ["unicorn", "typescript", "oxc", "react", "react_perf"],
+  "plugins": ["unicorn", "typescript", "oxc", "react", "react_perf", "import"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -27,6 +27,10 @@
     "no-constructor-return": "error",
     "no-self-compare": "error",
     "sort-imports": "off",
+    "one-var": ["error", "never"],
+    "no-implied-eval": "error",
+    "prefer-arrow-callback": "warn",
+    "prefer-regex-literals": ["error", { "disallowRedundantWrapping": true }],
 
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-string-trim-start-end": "error",
@@ -63,6 +67,10 @@
     "unicorn/consistent-existence-index-check": "warn",
     "unicorn/consistent-empty-array-spread": "warn",
     "unicorn/require-array-join-separator": "warn",
+    "unicorn/explicit-timer-delay": "warn",
+    "unicorn/prefer-export-from": "warn",
+    "unicorn/prefer-single-call": "warn",
+    "unicorn/no-array-fill-with-reference-type": "error",
 
     "no-var": "error",
     "no-debugger": "error",
@@ -70,7 +78,7 @@
     "typescript/consistent-type-definitions": "error",
     "typescript/consistent-type-imports": "error",
     "typescript/no-inferrable-types": "error",
-    "typescript/no-empty-interface": "warn",
+    "typescript/no-empty-object-type": "warn",
     "typescript/no-explicit-any": "warn",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
     "typescript/no-unnecessary-type-arguments": "error",
@@ -112,6 +120,8 @@
     "react/void-dom-elements-no-children": "error",
     "react/no-danger": "warn",
     "react/jsx-no-constructed-context-values": "warn",
+    "react/no-object-type-as-default-prop": "warn",
+    "react/no-unstable-nested-components": "warn",
     "react/no-unknown-property": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-key": "warn",
@@ -120,6 +130,7 @@
 
     "oxc/no-accumulating-spread": "error",
     "oxc/no-map-spread": "warn",
+    "oxc/bad-match-all-arg": "error",
 
     "import/no-cycle": "error",
     "import/no-duplicates": "error",

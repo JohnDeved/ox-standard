@@ -6,7 +6,7 @@
 [![CI](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml/badge.svg)](https://github.com/JohnDeved/ox-standard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#-license)
 
-A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https://oxc.rs/) toolchain. Roughly [50–100×](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster than the JavaScript equivalents, with a curated 113-rule preset for TypeScript and React.
+A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https://oxc.rs/) toolchain. Roughly [50–100×](https://voidzero.dev/posts/announcing-oxlint-1-stable#benchmark) faster than the JavaScript equivalents, with a curated preset for TypeScript and React.
 
 <div align="center">
   <a href="https://standardjs.com/">
@@ -33,7 +33,7 @@ A drop-in replacement for ESLint + Prettier built on the Rust-based [oxc](https:
 
 ## 🚀 Quick Setup
 
-> **Requirements:** Node.js (a recent LTS — oxlint and oxfmt need at least Node 18). For Deno projects, you also need Node alongside Deno because `oxlint` and `oxfmt` are invoked through `npx`. The CLI itself runs from any package manager's `dlx`-style runner.
+> **Requirements:** Node.js `^20.19.0 || >=22.12.0`, matching the bundled oxlint and oxfmt requirements. Development requires Node 22.12+ (22.x), Node 24.x, or Node 26+; Vitest 5 does not support Node 20. For Deno projects, you also need Node alongside Deno because `oxlint` and `oxfmt` are invoked through `npx`. The CLI itself runs from any package manager's `dlx`-style runner.
 
 ### Node.js Projects
 
@@ -49,7 +49,7 @@ bunx oxc-standard         # bun
 The setup auto-detects your package manager (via lockfile, then `npm_config_user_agent`, then the `packageManager` field in `package.json`) and uses the right install/uninstall commands. It then:
 
 - ✅ Removes ESLint, Prettier, and related packages and configs
-- ✅ Installs `oxlint` and `oxfmt` pinned to known-good versions
+- ✅ Installs `oxlint` and `oxfmt` using the preset’s tested version ranges
 - ✅ Writes `.oxlintrc.json` and `.oxfmtrc.json`
 - ✅ Adds a `lint` script to `package.json` — run with `npm run lint` / `pnpm lint` / `yarn lint` / `bun run lint`
 - ✅ Configures `.vscode/settings.json` and `.vscode/extensions.json` for the [oxc-vscode](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) extension
@@ -132,19 +132,22 @@ npx oxc-standard --dry-run --type=node
 - **Sub-second linting and formatting** — `oxlint` and `oxfmt` are native Rust binaries shipped via npm.
 - **One command for both** — the generated lint script runs `oxlint --fix .` followed by `oxfmt .` (semicolon, not `&&`, so formatting still runs even if lint reports an unfixable issue).
 - **Standard Style enforced** — no semicolons, single quotes, 2-space indent, strict equality, modern ES6+, React-hooks correctness, TypeScript consistency.
-- **Pinned tool versions** — `oxc-standard` declares the supported `oxlint` and `oxfmt` versions in both `dependencies` and `peerDependencies`, so the toolchain stays in sync with the rule set.
+- **Aligned tool versions** — `oxc-standard` declares the supported `oxlint` and `oxfmt` versions in both `dependencies` and `peerDependencies`, so the toolchain stays in sync with the rule set.
 - **VSCode integration on by default** — auto-fix and format-on-save via the official `oxc.oxc-vscode` extension.
 
 ---
 
 ## 🛠 Customization
 
-Override individual rules by extending the bundled config:
+For projects set up before this refresh, add `env` (and any required `globals`) to the existing `.oxlintrc.json`; setup deliberately leaves existing configs unchanged.
+
+Override individual rules by extending the bundled config. Oxlint does not inherit `env` or `globals` through `extends`; the setup CLI copies them for you. In manually written configs, declare the environments your project uses:
 
 ```jsonc
 // .oxlintrc.json
 {
   "extends": ["./node_modules/oxc-standard/.oxlintrc.json"],
+  "env": { "browser": true, "node": true },
   "rules": {
     "no-console": "warn",
   },
@@ -201,8 +204,8 @@ A typical `package.json` diff after migration:
 -   "eslint-config-standard": "^17.0.0",
 -   "prettier": "^3.0.0",
 +   "oxc-standard": "^1",
-+   "oxfmt": "^0.48.0",
-+   "oxlint": "^1.63.0"
++   "oxfmt": "^0.67.0",
++   "oxlint": "^1.82.0"
   }
 ```
 
@@ -224,7 +227,7 @@ bun  add     --dev      oxc-standard
 ### Node.js
 
 ```bash
-echo '{"extends": ["./node_modules/oxc-standard/.oxlintrc.json"]}' > .oxlintrc.json
+echo '{"extends": ["./node_modules/oxc-standard/.oxlintrc.json"], "env": {"browser": true, "node": true}}' > .oxlintrc.json
 cp node_modules/oxc-standard/.oxfmtrc.json .oxfmtrc.json
 npm pkg set scripts.lint="oxlint --fix .; oxfmt ."
 ```
@@ -247,15 +250,43 @@ Then run `deno task lint`.
 
 ## 🔧 Rule Reference
 
-113 carefully selected rules across 5 oxlint plugins (`unicorn`, `typescript`, `oxc`, `react`, `react_perf`). The full list lives in [`.oxlintrc.json`](./.oxlintrc.json); the highlights are below.
+The preset combines explicit rule settings with `correctness: error` and `suspicious: warn` across 6 plugins (`unicorn`, `typescript`, `oxc`, `react`, `react_perf`, `import`) plus core ESLint rules. Category defaults automatically include newly supported checks; the explicit settings tune their severity and select additional style/performance rules. The full configuration lives in [`.oxlintrc.json`](./.oxlintrc.json).
+
+The September 2026 refresh targets **oxlint 1.82.0** and **oxfmt 0.67.0**. It enables the import plugin (previously configured import rules were inactive), replaces `typescript/no-empty-interface` with `typescript/no-empty-object-type`, and adds the following explicit selections:
+
+| Rules                                                                                                               | Level   | Purpose                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `one-var` (`never`), `prefer-regex-literals`                                                                        | Error   | Separate variable declarations and use literal regular expressions when the pattern is static.                |
+| `no-implied-eval`, `unicorn/no-array-fill-with-reference-type`, `oxc/bad-match-all-arg`                             | Error   | Catch string-based timer evaluation, shared references in array fills, and non-global `matchAll` expressions. |
+| `prefer-arrow-callback`, `unicorn/explicit-timer-delay`, `unicorn/prefer-export-from`, `unicorn/prefer-single-call` | Warning | Prefer concise callbacks, explicit delays, direct re-exports, and combined collection updates.                |
+| `react/no-object-type-as-default-prop`, `react/no-unstable-nested-components`                                       | Warning | Avoid unstable default props and components recreated during rendering.                                       |
+
+The React plugin also gains compiler-backed correctness checks through the existing category defaults, including render purity and state-update checks. No React Compiler build integration is required to lint these patterns.
+
+### Type-aware rules
+
+The default setup stays syntax-only and does **not** install `oxlint-tsgolint`. Configured rules that require type information (such as `typescript/prefer-nullish-coalescing` and `typescript/no-unnecessary-type-assertion`) only run when type-aware linting is enabled. To opt in for a TypeScript project with a `tsconfig.json`:
+
+```bash
+npm install --save-dev oxlint-tsgolint@^7.0.2001
+```
+
+```jsonc
+// .oxlintrc.json
+{
+  "extends": ["./node_modules/oxc-standard/.oxlintrc.json"],
+  "env": { "browser": true, "node": true },
+  "options": { "typeAware": true },
+}
+```
+
+See the [upstream type-aware guide](https://oxc.rs/docs/guide/usage/linter/type-aware) for setup details. The highlights below include both syntax-only and opt-in type-aware rules.
 
 <details>
 <summary><b>JavaScript Standard Style</b></summary>
 
 - `eqeqeq` - Strict equality (`===`)
-- `curly` - Consistent braces
 - `no-var` - Use `const`/`let`
-- `space-infix-ops` - Proper spacing
 - `yoda` - Readable comparisons
 - `no-constructor-return` - No return values from constructors
 - `no-self-compare` - Flags `x === x` tautologies
@@ -299,6 +330,7 @@ Then run `deno task lint`.
 - `no-useless-empty-export` - Removes redundant `export {}`
 - `no-duplicate-enum-values` / `no-mixed-enums` - Enum correctness guards
 - `no-unsafe-declaration-merging` - Class+interface merge safety
+- `no-empty-object-type` _(warn)_ - Avoids misleading empty interfaces and `{}` types
 
 </details>
 
@@ -340,13 +372,12 @@ Found an issue or want to suggest improvements? [Open an issue](https://github.c
 Local development:
 
 ```bash
-npm install
-npm run build       # tsc → dist/
-npm test            # vitest
-npm run lint        # dogfood: lint this repo with oxlint+oxfmt
+npm ci
+npm run check       # build + read-only lint/format checks + all tests
+npm run lint        # auto-fix lint issues and format the repository
 ```
 
-CI runs the full test suite on Node 20 and 22 across Linux and macOS, plus a smoke test of the setup CLI against npm, pnpm, yarn, bun, and Deno.
+CI runs the full check on Node 22, 24, and 26 across Linux and macOS, plus a smoke test of the setup CLI against npm, pnpm, yarn, bun, and Deno.
 
 ---
 

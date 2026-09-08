@@ -34,14 +34,8 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npx vitest run
+      - name: Build, check lint and formatting, and run tests
+        run: npm run check
 
       - name: Verify tag matches package.json
         run: |

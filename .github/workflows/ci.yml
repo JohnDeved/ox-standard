@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ['20', '22']
+        node: ['22', '24', '26']
     steps:
       - uses: actions/checkout@v4
 
@@ -31,14 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Run all tests
-        run: npx vitest run
+      - name: Build, check lint and formatting, and run tests
+        run: npm run check
 
   smoke-package-managers:
     name: smoke-test setup with ${{ matrix.pm }}

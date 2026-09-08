@@ -584,8 +584,8 @@ const installOxStandard = (pm: PackageManager): void => {
     const ownDeps = readOwnPackage().dependencies ?? {}
     const specs = [
       'oxc-standard@^1',
-      `oxlint@${ownDeps.oxlint ?? '^1'}`,
-      `oxfmt@${ownDeps.oxfmt ?? '^0.48'}`,
+      `oxlint@${ownDeps.oxlint ?? '^1.82.0'}`,
+      `oxfmt@${ownDeps.oxfmt ?? '^0.67.0'}`,
     ]
     execSafe(PACKAGE_MANAGERS[pm].installDevSaved(specs))
     console.log('✓ Installed oxc-standard, oxlint, oxfmt')
@@ -614,8 +614,15 @@ const setupDenoProject = (): void => {
 
 const buildNodeOxlintConfig = (): Record<string, unknown> => {
   const reactMajor = detectReactMajorVersion(path.resolve(process.cwd(), 'package.json'))
+  // Oxlint extends rules/plugins, but env and globals belong to the consuming config.
+  // Preserve them so checks such as no-implied-eval recognize the standard globals.
+  const { env, globals } = JSON.parse(
+    fs.readFileSync(path.join(getPackageRoot(), '.oxlintrc.json'), 'utf8')
+  ) as { env: Record<string, boolean>; globals: Record<string, string> }
   return {
     extends: ['./node_modules/oxc-standard/.oxlintrc.json'],
+    env,
+    globals,
     ...(reactMajor ? { settings: { react: { version: reactMajor } } } : {}),
   }
 }

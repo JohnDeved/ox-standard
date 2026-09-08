@@ -5,8 +5,8 @@ import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI = path.resolve(__dirname, '..', 'dist', 'setup-oxlint.js')
+const testDirectory = path.dirname(fileURLToPath(import.meta.url))
+const CLI = path.resolve(testDirectory, '..', 'dist', 'setup-oxlint.js')
 
 const runCli = (
   args: string[],
@@ -110,6 +110,11 @@ describe('CLI: full non-interactive node setup', () => {
 
       const oxlintConfig = JSON.parse(fs.readFileSync(path.join(tmp, '.oxlintrc.json'), 'utf8'))
       expect(oxlintConfig.extends).toEqual(['./node_modules/oxc-standard/.oxlintrc.json'])
+      const preset = JSON.parse(
+        fs.readFileSync(path.resolve(testDirectory, '..', '.oxlintrc.json'), 'utf8')
+      )
+      expect(oxlintConfig.env).toEqual(preset.env)
+      expect(oxlintConfig.globals).toEqual(preset.globals)
 
       const oxfmtConfig = JSON.parse(fs.readFileSync(path.join(tmp, '.oxfmtrc.json'), 'utf8'))
       expect(oxfmtConfig).toMatchObject({
@@ -159,7 +164,14 @@ describe('CLI: --dry-run', () => {
       expect(r.stdout).toContain('[dry-run] would run: npm install')
       // 1.4.0 fix: oxlint and oxfmt are installed as direct devDeps too,
       // not just transitively, to guarantee node_modules/.bin/ contains them.
-      expect(r.stdout).toMatch(/\[dry-run\] would run: npm install --save-dev .*oxc-standard@\^1.* oxlint@.* oxfmt@/)
+      expect(r.stdout).toMatch(
+        /\[dry-run\] would run: npm install --save-dev .*oxc-standard@\^1.* oxlint@.* oxfmt@/
+      )
+      const ownPackage = JSON.parse(
+        fs.readFileSync(path.resolve(testDirectory, '..', 'package.json'), 'utf8')
+      )
+      expect(r.stdout).toContain(`oxlint@${ownPackage.dependencies.oxlint}`)
+      expect(r.stdout).toContain(`oxfmt@${ownPackage.dependencies.oxfmt}`)
       expect(r.stdout).toContain('[dry-run] would run: npm pkg set scripts.lint')
 
       // Nothing actually written

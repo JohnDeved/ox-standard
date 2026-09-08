@@ -4,10 +4,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const testFilename = fileURLToPath(import.meta.url)
+const testDirectory = path.dirname(testFilename)
 
-const testProjectDir = path.resolve(__dirname, '../.test-deno-project')
+const testProjectDir = path.resolve(testDirectory, '../.test-deno-project')
 
 describe('Deno project integration', () => {
   beforeAll(() => {
@@ -35,7 +35,7 @@ describe('Deno project integration', () => {
 
     // Create .oxlintrc.json with Deno config
     const baseConfig = JSON.parse(
-      fs.readFileSync(path.resolve(__dirname, '../.oxlintrc.json'), 'utf8')
+      fs.readFileSync(path.resolve(testDirectory, '../.oxlintrc.json'), 'utf8')
     )
     const denoConfig = {
       ...baseConfig,
@@ -58,7 +58,7 @@ describe('Deno project integration', () => {
 
     // Create .oxfmtrc.json
     fs.copyFileSync(
-      path.resolve(__dirname, '../.oxfmtrc.json'),
+      path.resolve(testDirectory, '../.oxfmtrc.json'),
       path.join(testProjectDir, '.oxfmtrc.json')
     )
 
