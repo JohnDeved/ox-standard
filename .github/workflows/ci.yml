@@ -92,6 +92,9 @@ jobs:
           nodeLinker: node-modules
           enableImmutableInstalls: false
           enableScripts: false
+          # This smoke test intentionally installs the newest supported oxc releases.
+          # Yarn 4.12+ otherwise quarantines packages published within the last day.
+          npmMinimalAgeGate: 0
           YAMLEOF
           fi
 
