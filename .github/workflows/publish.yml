@@ -4,10 +4,14 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - main
+    paths:
+      - 'package.json'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish (e.g. v1.4.1). Defaults to latest tag on main.'
+        description: 'Tag to publish (e.g. v1.4.1). Leave empty to publish package.json from main.'
         required: false
 
 permissions:
@@ -37,25 +41,59 @@ jobs:
       - name: Build, check lint and formatting, and run tests
         run: npm run check
 
-      - name: Verify tag matches package.json
+      - name: Resolve release version
+        id: release
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
         run: |
+          set -euo pipefail
           PKG_VERSION=$(node -p "require('./package.json').version")
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          # Strip leading 'v' from tag if present
-          TAG_VERSION="${TAG_NAME#v}"
-          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::Tag $TAG_NAME (version $TAG_VERSION) does not match package.json version $PKG_VERSION"
-            exit 1
+          RELEASE_TAG="v${PKG_VERSION}"
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            RELEASE_TAG="${GITHUB_REF#refs/tags/}"
+            TAG_VERSION="${RELEASE_TAG#v}"
+            if [[ "$PKG_VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Tag $RELEASE_TAG (version $TAG_VERSION) does not match package.json version $PKG_VERSION"
+              exit 1
+            fi
+          elif [[ -n "${INPUT_TAG:-}" ]]; then
+            RELEASE_TAG="$INPUT_TAG"
+            TAG_VERSION="${RELEASE_TAG#v}"
+            if [[ "$PKG_VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Requested tag $RELEASE_TAG (version $TAG_VERSION) does not match package.json version $PKG_VERSION"
+              exit 1
+            fi
           fi
-          echo "Publishing version $PKG_VERSION (tag $TAG_NAME)"
+
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "Release version: $PKG_VERSION ($RELEASE_TAG)"
+
+      - name: Check npm registry
+        id: npm
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION="${{ steps.release.outputs.version }}"
+          if npm view "$PKG_NAME@$PKG_VERSION" version --json >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$PKG_NAME@$PKG_VERSION is already published; skipping publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "$PKG_NAME@$PKG_VERSION is not published yet."
+          fi
 
       - name: Publish
+        if: steps.npm.outputs.exists != 'true'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
+        if: steps.npm.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           generate_release_notes: true
-          name: ${{ github.ref_name }}
+          name: ${{ steps.release.outputs.tag }}
