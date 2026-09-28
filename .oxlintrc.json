@@ -27,7 +27,6 @@
     "no-constructor-return": "error",
     "no-self-compare": "error",
     "sort-imports": "off",
-    "one-var": ["error", "never"],
     "no-implied-eval": "error",
     "prefer-arrow-callback": "warn",
     "prefer-regex-literals": ["error", { "disallowRedundantWrapping": true }],

@@ -59,12 +59,6 @@ const fixtures: RuleFixture[] = [
       }`,
   },
   {
-    rule: 'eslint(one-var)',
-    severity: 'error',
-    invalid: 'export const first = 1, second = 2',
-    valid: 'export const first = 1; export const second = 2',
-  },
-  {
     rule: 'eslint(no-implied-eval)',
     severity: 'error',
     invalid: `setTimeout('console.log(1)', 0)`,
@@ -206,6 +200,12 @@ describe('oxlint rules via shared config', () => {
       ])
     )
     expect(lint(fixture.valid).filter(diagnostic => diagnostic.code === fixture.rule)).toEqual([])
+  })
+
+  it('allows grouped variable declarations', () => {
+    expect(
+      lint('export const first = 1, second = 2').filter(d => d.code === 'eslint(one-var)')
+    ).toEqual([])
   })
 
   it('detects circular imports without an extra --import-plugin flag', () => {
