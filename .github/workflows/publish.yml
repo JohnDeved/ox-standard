@@ -83,22 +83,16 @@ jobs:
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "$PKG_NAME@$PKG_VERSION is already published; skipping publish."
           else
+            npm view "$PKG_NAME" version --json >/dev/null
             echo "exists=false" >> "$GITHUB_OUTPUT"
             echo "$PKG_NAME@$PKG_VERSION is not published yet."
           fi
 
       - name: Publish
         if: steps.npm.outputs.exists != 'true'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [[ -n "${NPM_TOKEN:-}" ]]; then
-            export NODE_AUTH_TOKEN="$NPM_TOKEN"
-          fi
-          npm publish --provenance --access public
+        run: npm publish --access public
 
       - name: Create GitHub Release
-        if: steps.npm.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release.outputs.tag }}
